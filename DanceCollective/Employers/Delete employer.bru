@@ -1,0 +1,19 @@
+meta {
+  name: Delete employer
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{server}}/employers/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+settings {
+  encodeUrl: true
+}

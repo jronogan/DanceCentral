@@ -1,0 +1,20 @@
+meta {
+  name: Get gig roles
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{server}}/gigs-roles/:gigid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  gigid: 1
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

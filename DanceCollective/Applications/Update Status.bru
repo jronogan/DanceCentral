@@ -1,0 +1,26 @@
+meta {
+  name: Update Status
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{server}}/applications/:application_id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  application_id: 5
+}
+
+body:json {
+  {
+    "status": "accepted"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

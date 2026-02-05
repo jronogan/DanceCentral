@@ -1,0 +1,23 @@
+meta {
+  name: Delete member
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{server}}/employer-members
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "employer_id": 1,
+    "user_id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

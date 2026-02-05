@@ -1,0 +1,25 @@
+meta {
+  name: create user
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{server}}/users/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "tina",
+    "email": "tina@email.com",
+    "password": "password123",
+    "date_of_birth": "1991-06-25"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

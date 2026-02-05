@@ -1,0 +1,22 @@
+meta {
+  name: User Applies (Create)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{server}}/applications
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "gig_id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

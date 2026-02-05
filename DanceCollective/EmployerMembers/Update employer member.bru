@@ -1,0 +1,23 @@
+meta {
+  name: Update employer member
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{server}}/employer-members
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "employer_id": 1,
+    "member_role": "admin"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

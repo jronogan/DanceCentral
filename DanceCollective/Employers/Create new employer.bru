@@ -1,0 +1,26 @@
+meta {
+  name: Create new employer
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{server}}/employers
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "employer_name": "Kakeguribasho",
+    "description": "Crazy Betting",
+    "website": "animeinsanity.com",
+    "email": "josephrox@email.com",
+    "phone": "12345678"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{server}}/users/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "joseph@email.com",
+    "password": "password123"
+  }
+}
+
+script:post-response {
+  const jsonData = res.getBody()
+  
+  bru.setEnvVar('access', jsonData.access_token)
+  bru.setEnvVar('refresh', jsonData.refresh_token)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

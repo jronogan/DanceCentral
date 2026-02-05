@@ -1,0 +1,28 @@
+meta {
+  name: Update gig role details
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{server}}/gigs-roles/:gigid
+  body: json
+  auth: inherit
+}
+
+params:path {
+  gigid: 1
+}
+
+body:json {
+  {
+    "role_name": "choreographer",
+    "needed_count": 2,
+    "pay_amount": "2000"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

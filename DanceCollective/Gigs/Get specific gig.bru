@@ -1,0 +1,22 @@
+meta {
+  name: Get specific gig
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{server}}/gigs?employer_id=1&type_name=concert&posted_by_user_id=1
+  body: none
+  auth: inherit
+}
+
+params:query {
+  employer_id: 1
+  type_name: concert
+  posted_by_user_id: 1
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

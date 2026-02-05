@@ -1,0 +1,20 @@
+meta {
+  name: Delete gig
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{server}}/gigs/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 2
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

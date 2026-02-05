@@ -1,0 +1,27 @@
+meta {
+  name: Create gig roles
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{server}}/gigs-roles
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "gig_id": 1,
+    "role_name": "choreographer",
+    "needed_count": 10,
+    "pay_amount": "500",
+    "pay_currency": "SGD",
+    "pay_unit": "per gig"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Get employer by ID
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{server}}/employers/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Update Employer
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{server}}/employers/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 1
+}
+
+body:json {
+  {
+    "description": "The best and most elite school ever"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

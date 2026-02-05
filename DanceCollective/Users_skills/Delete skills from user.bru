@@ -1,0 +1,27 @@
+meta {
+  name: Delete skills from user
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{server}}/users-skills/skills
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{access}}
+}
+
+body:json {
+  {
+    "user_id": 1,
+    "skill_name": "hip_hop"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

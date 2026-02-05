@@ -1,0 +1,26 @@
+meta {
+  name: Delete role from gig
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{server}}/gigs-roles/:gigid
+  body: json
+  auth: inherit
+}
+
+params:path {
+  gigid: 1
+}
+
+body:json {
+  {
+    "role_name": "choreographer"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

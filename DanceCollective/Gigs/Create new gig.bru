@@ -1,0 +1,27 @@
+meta {
+  name: Create new gig
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{server}}/gigs
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "gig_name": "RANDO RANDO",
+    "gig_date": "2026-04-08",
+    "gig_details": "10 rehearsals",
+    "type_name": "concert",
+    "employer_id": 1,
+    "posted_by_user_id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

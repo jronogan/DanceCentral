@@ -1,0 +1,27 @@
+meta {
+  name: Add Role to User
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{server}}/users-roles/roles
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{access}}
+}
+
+body:json {
+  {
+    "user_id": 1,
+    "role_name": "employer"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

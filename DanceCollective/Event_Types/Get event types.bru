@@ -1,0 +1,15 @@
+meta {
+  name: Get event types
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{server}}/event-types
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

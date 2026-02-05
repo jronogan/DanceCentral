@@ -1,0 +1,24 @@
+meta {
+  name: Get all skills of user
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{server}}/users-skills/:id/skills
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 1
+}
+
+headers {
+  : 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
