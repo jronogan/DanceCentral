@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { apiFetch } from "../lib/api.js";
 import { useNavigate } from "react-router-dom";
+import { createEmployer, getEmployerFromUser } from "../lib/dashboardApi.js";
 
 const AuthContext = createContext(null);
 
@@ -128,7 +129,7 @@ export function AuthProvider({ children }) {
     return Array.isArray(data) ? data : [];
   }
 
-  async function login({ email, password }) {
+  async function login({ email, password, skipEmployerLookup = false }) {
     const data = await apiFetch("/users/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
@@ -154,38 +155,33 @@ export function AuthProvider({ children }) {
     const resolvedUserId =
       me?.user_id ?? data?.user_id ?? user?.user_id ?? null;
 
-    // Only look up employer membership if backend indicates it exists.
-    // This avoids hitting /employer-members/<id> and getting noisy 400s for new/non-employer users.
+    // Only look up employer membership if the user actually has the employer role.
+    // Dancers/choreographers are not employer members, and some backends return 400 for them.
     let employer = null;
-    const hintedEmployerId = me?.employer_id ?? user?.employer_id ?? null;
-    if (resolvedUserId && hintedEmployerId) {
+    if (!skipEmployerLookup && resolvedUserId && nextToken) {
       try {
-        employer = await apiFetch(`/employer-members/${resolvedUserId}`, {
-          method: "GET",
-          token: nextToken,
+        const fetchedRoles = await fetchRolesForUser({
+          userId: resolvedUserId,
+          accessToken: nextToken,
         });
-      } catch (err) {
+        const hasEmployerRole = fetchedRoles.includes("employer");
+        if (hasEmployerRole) {
+          employer = await getEmployerFromUser({
+            userId: resolvedUserId,
+            token: nextToken,
+          });
+        }
+      } catch {
         employer = null;
-        console.log("[auth] login employer lookup skipped/failed:", {
-          user_id: resolvedUserId,
-          status: err?.status,
-          message: err?.message,
-        });
       }
     }
 
-    setUser({
-      // Preserve any stored fields
-      ...(user ?? {}),
+    setUser((prev) => ({
+      ...(prev ?? {}),
       user_id: resolvedUserId,
       email: me?.email ?? email,
-      employer_id:
-        employer?.employer_id ?? me?.employer_id ?? user?.employer_id ?? null,
-    });
-
-    // Note: we don't fetch roles here so register() can assign roles first and then
-    // do a single authoritative roles refresh. For normal login flows, roles will
-    // be fetched in a follow-up effect if needed.
+      employer_id: employer?.employer_id ?? prev?.employer_id ?? null,
+    }));
 
     return data;
   }
@@ -207,8 +203,8 @@ export function AuthProvider({ children }) {
     const loginRes = await login({
       email: userPayload.email,
       password: userPayload.password,
+      skipEmployerLookup: true,
     });
-
     // 3) Assign roles (requires JWT)
     const createdUserId = createUser?.user_id ?? null;
     console.log("[auth] register createdUserId:", createdUserId);
@@ -283,16 +279,16 @@ export function AuthProvider({ children }) {
 
     // 4) Optional: create employer + membership
     if (payload.employer?.employer_name) {
-      const employerRes = await apiFetch("/employers/", {
-        method: "POST",
+      // Use trailing slash to avoid Flask redirect (which can break CORS preflight).
+      const employerRes = await createEmployer({
         token: loginRes?.access_token,
-        body: JSON.stringify({
+        body: {
           employer_name: payload.employer.employer_name,
           description: payload.employer.description ?? null,
           website: payload.employer.website ?? null,
           email: payload.employer.email ?? userPayload.email,
           phone: payload.employer.phone ?? null,
-        }),
+        },
       });
 
       const employerId = employerRes?.employer?.employer_id;
@@ -301,7 +297,7 @@ export function AuthProvider({ children }) {
       console.log(memberRole);
 
       if (employerId) {
-        await apiFetch("/employer-members", {
+        await apiFetch("/employer-members/", {
           method: "POST",
           token: loginRes?.access_token,
           body: JSON.stringify({

@@ -176,6 +176,15 @@ const Registration = () => {
       return;
     }
 
+    const buildEmployer = () => ({
+      employer_name: employerName,
+      description: employerDescription || null,
+      website: employerWebsite || null,
+      phone: employerPhone || null,
+      email,
+      member_role: "member",
+    });
+
     const payload = {
       user: {
         // Flask expects: name, email, date_of_birth, password
@@ -187,20 +196,8 @@ const Registration = () => {
       roles: selectedRoles,
       // THIS ONE NEED TO CHANGE
       skills: selectedSkills,
+      ...(wantsEmployer && { employer: buildEmployer() }),
     };
-
-    if (wantsEmployer) {
-      payload.employer = {
-        // Client-side hint for follow-up API calls
-        // create: employerMode === "company",
-        employer_name: employerName,
-        description: employerDescription || null,
-        website: employerWebsite || null,
-        phone: employerPhone || null,
-        email,
-        member_role: "member",
-      };
-    }
 
     setSubmitting(true);
     try {

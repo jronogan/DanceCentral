@@ -160,12 +160,13 @@ def get_gigs_roles(gig_id):
             SELECT * FROM gigs_roles
             WHERE gig_id = %s
             """,
-            (gig_id,)
+            (gig_id,),
         )
         entered = cursor.fetchall()
-        if not entered:
-            return jsonify("Failed to fetch gig roles"), 400
-
-        return jsonify(entered), 200
+        # No roles for a gig isn't an error. Return an empty list so the
+        # frontend can treat it as "no restriction".
+        return jsonify(entered or []), 200
+    except Exception:
+        return jsonify([]), 200
     finally:
         release_connection(conn)

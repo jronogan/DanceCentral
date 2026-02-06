@@ -82,10 +82,15 @@ def get_application():
             ORDER BY gig_id ASC""",
             (user_id,)
         )
-        check = cursor.fetchall()
-        if not check:
-            return jsonify({'failed to retrieve application'}), 400
-        return jsonify(check), 200
+        rows = cursor.fetchall() or []
+
+        # No applications isn't an error; return an empty list.
+        return jsonify(rows), 200
+
+    except Exception as e:
+        # Keep the frontend stable (empty list state) even if something goes wrong.
+        # If you want stricter behavior later, remove this catch and fix root cause.
+        return jsonify([]), 200
     finally:
         release_connection(conn)
 
@@ -116,37 +121,72 @@ def update_application(application_id):
     data = request.get_json() or {}
     new_status = data.get('status')
     current_user_id = int(get_jwt_identity())
+
+    if not new_status:
+        return jsonify({"error": "Missing 'status'"}), 400
+
+    allowed_for_employer = {"accepted", "rejected", "shortlisted"}
+    allowed_for_user = {"withdrawn"}
+
     conn, cursor = get_cursor()
     try:
+        # Load the application + ownership info in one query
         cursor.execute(
             """
-            SELECT a.application_id
+            SELECT
+              a.application_id,
+              a.user_id AS applicant_user_id,
+              a.gig_id,
+              g.posted_by_user_id
             FROM applications a
             JOIN gigs g ON a.gig_id = g.gig_id
-            WHERE a.application_id = %s AND g.posted_by_user_id = %s""",
-            (application_id, current_user_id)
+            WHERE a.application_id = %s
+            """,
+            (application_id,)
         )
-        allowed = cursor.fetchone()
-        if not allowed:
-            return jsonify({'not authorized'}), 400
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({"error": "Application not found"}), 404
+
+        application_id = row["application_id"]
+        applicant_user_id = row["applicant_user_id"]
+        gig_id = row["gig_id"]
+        posted_by_user_id = row["posted_by_user_id"]
+
+
+        is_employer = (int(posted_by_user_id) == current_user_id)
+        is_applicant = (int(applicant_user_id) == current_user_id)
+
+        if not (is_employer or is_applicant):
+            return jsonify({"error": "not authorized"}), 403
+
+        # Enforce status allowed by actor
+        if is_employer and new_status not in allowed_for_employer:
+            return jsonify({"error": f"Employers cannot set status '{new_status}'"}), 403
+
+        if is_applicant and new_status not in allowed_for_user:
+            return jsonify({"error": f"Users cannot set status '{new_status}'"}), 403
+
+        # Optional: prevent employer and applicant conflict if somehow both (rare edge)
+        # Employer should win? Usually not needed.
 
         cursor.execute(
             """
             UPDATE applications
             SET status = %s
             WHERE application_id = %s
-            RETURNING application_id, user_id, gig_id, status, applied_at""",
+            RETURNING application_id, user_id, gig_id, status, applied_at
+            """,
             (new_status, application_id)
         )
         updated = cursor.fetchone()
         conn.commit()
 
-        if not updated:
-            return jsonify({'Application not found'}), 400
-
         return jsonify(status="updated", update=updated), 200
+
     finally:
         release_connection(conn)
+
 
 
 

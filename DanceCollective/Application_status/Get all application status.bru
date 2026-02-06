@@ -1,0 +1,15 @@
+meta {
+  name: Get all application status
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{server}}/application-status
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
