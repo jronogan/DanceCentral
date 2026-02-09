@@ -1,15 +1,35 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../state/AuthContext.jsx";
+import { useAuth } from "../auth/AuthContext.jsx";
+
+function roleToPath(roleName) {
+  switch ((roleName ?? "").toLowerCase()) {
+    case "dancer":
+      return "/dancer";
+    case "choreographer":
+      return "/choreographer";
+    case "employer":
+      return "/employer";
+    default:
+      return "/login";
+  }
+}
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, loading } = useAuth();
+  const { loginProcess, loading, roles, activeRole } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const nextRole = activeRole ?? roles?.[0];
+    if (!nextRole) return;
+
+    navigate(roleToPath(nextRole), { replace: true });
+  }, [activeRole, roles, navigate]);
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -22,8 +42,7 @@ const Login = () => {
 
     setSubmitting(true);
     try {
-      await login({ email, password });
-      navigate("/", { replace: true });
+      await loginProcess({ email, password });
     } catch (err) {
       setError(err?.message ?? "Login failed");
     } finally {

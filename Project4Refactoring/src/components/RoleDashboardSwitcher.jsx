@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../state/AuthContext.jsx";
+import { useAuth } from "../auth/AuthContext.jsx";
 
 function roleToPath(role) {
   switch ((role ?? "").toLowerCase()) {
@@ -20,34 +20,31 @@ export default function RoleDashboardSwitcher({ label = "Dashboard" }) {
   const location = useLocation();
   const { roles, activeRole, setActiveRole } = useAuth();
 
-  const availableRoles = useMemo(() => {
-    if (!Array.isArray(roles)) return [];
-    return roles.filter((r) => roleToPath(r) !== "/");
-  }, [roles]);
+  const availableRoles = useMemo(
+    () =>
+      (Array.isArray(roles) ? roles : []).filter((r) => roleToPath(r) !== "/"),
+    [roles],
+  );
 
-  // Prefer activeRole when it's one of the available roles; otherwise infer from the route.
-  const inferred = useMemo(() => {
-    if (availableRoles.includes(activeRole)) return activeRole;
+  // If user somehow has no dashboard roles, don't render.
+  if (availableRoles.length === 0) return null;
 
-    const p = location.pathname;
-    if (p.startsWith("/dancer")) return "dancer";
-    if (p.startsWith("/choreographer")) return "choreographer";
-    if (p.startsWith("/employer")) return "employer";
-    return "";
-  }, [availableRoles, activeRole, location.pathname]);
-
-  if (!availableRoles.length) return null;
+  const selected =
+    activeRole && availableRoles.includes(activeRole)
+      ? activeRole
+      : availableRoles[0];
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <span style={{ fontWeight: 600 }}>{label}:</span>
         <select
-          value={inferred ?? ""}
+          value={selected ?? ""}
           onChange={(e) => {
             const next = e.target.value;
             setActiveRole(next);
-            navigate(roleToPath(next));
+            const nextPath = roleToPath(next);
+            if (location.pathname !== nextPath) navigate(nextPath);
           }}
         >
           {availableRoles.map((r) => (

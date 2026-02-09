@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../state/AuthContext.jsx";
-import { apiFetch } from "../lib/api.js";
+import { useAuth } from "../auth/AuthContext.jsx";
+import {
+  getMemberTypes,
+  getRoles,
+  getSkills,
+} from "../library/dashboardApi.js";
 
 const STEPS = {
   DETAILS: 1,
@@ -10,9 +14,22 @@ const STEPS = {
   REVIEW: 4,
 };
 
-const Registration = () => {
+const Register = () => {
   const navigate = useNavigate();
-  const { register, loading } = useAuth();
+  const { registerProcess, loading, roles: authRoles, activeRole } = useAuth();
+
+  function roleToPath(roleName) {
+    switch ((roleName ?? "").toLowerCase()) {
+      case "dancer":
+        return "/dancer";
+      case "choreographer":
+        return "/choreographer";
+      case "employer":
+        return "/employer";
+      default:
+        return "/";
+    }
+  }
 
   const [roleOptions, setRoleOptions] = useState([]);
   const [skillOptions, setSkillOptions] = useState([]);
@@ -26,39 +43,47 @@ const Registration = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   // Prevent recalculation every render
   const [roles, setRoles] = useState(() => new Set());
-
   const [skills, setSkills] = useState(() => new Set());
+  const [memberRoles, setMemberRoles] = useState(() => new Set());
 
   const [employerMode, setEmployerMode] = useState("solo");
   const [employerName, setEmployerName] = useState("");
   const [employerDescription, setEmployerDescription] = useState("");
   const [employerWebsite, setEmployerWebsite] = useState("");
   const [employerPhone, setEmployerPhone] = useState("");
+  const [employerMemberRole, setEmployerMemberRole] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const selectedRoles = useMemo(() => Array.from(roles), [roles]);
+  const selectedRoles = Array.from(roles);
+  const selectedSkills = Array.from(skills);
+  const selectedMemberRoles = Array.from(memberRoles);
   const wantsEmployer = roles.has("employer");
   const wantsSkills = roles.has("dancer") || roles.has("choreographer");
-  const selectedSkills = useMemo(() => Array.from(skills), [skills]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setOptionsLoading(true);
       try {
-        const [rolesRes, skillsRes] = await Promise.all([
-          apiFetch("/roles/", { method: "GET" }),
-          apiFetch("/skills/", { method: "GET" }),
+        const [rolesRes, skillsRes, memberRolesRes] = await Promise.all([
+          getRoles(),
+          getSkills(),
+          getMemberTypes(),
         ]);
 
         const rolesList = Array.isArray(rolesRes) ? rolesRes : [];
         const skillsList = Array.isArray(skillsRes) ? skillsRes : [];
+        const memberRolesList = Array.isArray(memberRolesRes)
+          ? memberRolesRes
+          : [];
 
         if (cancelled) return;
+
         setRoleOptions(rolesList);
         setSkillOptions(skillsList);
+        setMemberRoles(memberRolesList);
       } catch (err) {
         if (cancelled) return;
         console.warn("[register] failed to load roles/skills options:", err);
@@ -75,11 +100,14 @@ const Registration = () => {
     };
   }, []);
 
-  function toggleRole(roleId) {
+  function toggleRole(roleName) {
     setRoles((prev) => {
       const next = new Set(prev);
-      if (next.has(roleId)) next.delete(roleId);
-      else next.add(roleId);
+      if (next.has(roleName)) {
+        next.delete(roleName);
+      } else {
+        next.add(roleName);
+      }
       return next;
     });
   }
@@ -182,7 +210,7 @@ const Registration = () => {
       website: employerWebsite || null,
       phone: employerPhone || null,
       email,
-      member_role: "member",
+      member_role: employerMemberRole || null,
     });
 
     const payload = {
@@ -193,16 +221,16 @@ const Registration = () => {
         password,
         date_of_birth: dob,
       },
-      roles: selectedRoles,
-      // THIS ONE NEED TO CHANGE
-      skills: selectedSkills,
-      ...(wantsEmployer && { employer: buildEmployer() }),
+      roles: selectedRoles ?? [],
+      skills: selectedSkills ?? [],
+      ...(wantsEmployer ? { employer: buildEmployer() } : {}),
     };
 
     setSubmitting(true);
     try {
-      await register(payload);
-      navigate("/", { replace: true });
+      await registerProcess(payload);
+      const nextRole = activeRole ?? authRoles?.[0] ?? selectedRoles?.[0];
+      navigate(roleToPath(nextRole), { replace: true });
     } catch (err) {
       setError(err?.message ?? "Registration failed");
     } finally {
@@ -355,6 +383,21 @@ const Registration = () => {
               >
                 <option value="solo">Solo employer</option>
                 <option value="company">Company</option>
+              </select>
+            </label>
+
+            <label style={{ display: "grid", gap: 6, maxWidth: 320 }}>
+              <span>Your member role</span>
+              <select
+                value={employerMemberRole}
+                onChange={(e) => setEmployerMemberRole(e.target.value)}
+              >
+                <option value="">Select a role…</option>
+                {selectedMemberRoles.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
               </select>
             </label>
 
@@ -598,4 +641,4 @@ const Registration = () => {
   );
 };
 
-export default Registration;
+export default Register;
