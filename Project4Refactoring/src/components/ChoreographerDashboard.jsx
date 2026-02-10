@@ -18,7 +18,7 @@ const ChoreographerDashboard = () => {
 
   const skillsQuery = useQuery({
     queryKey: ["skills", user?.user_id],
-    queryFn: () => getSkillsForUser({ token, userId: user?.user_id }),
+    queryFn: () => getSkillsForUser({ token }),
     enabled: Boolean(token && user?.user_id),
   });
 

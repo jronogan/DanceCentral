@@ -30,6 +30,20 @@ export async function getUserProfile(token) {
   });
   return data;
 }
+
+// Employer-facing (read-only) user profile for viewing applicants.
+// Backend must enforce that only authorized employers can view this.
+export async function getUserPublicProfile({ token, userId }) {
+  if (userId == null) throw new Error("Missing userId");
+  const data = await apiFetch(
+    `/users/${encodeURIComponent(String(userId))}/public`,
+    {
+      method: "GET",
+      token,
+    },
+  );
+  return data;
+}
 // Optional: refresh access token (requires refresh token)
 export async function refreshAccessToken(refreshToken) {
   const data = await apiFetch("/users/refresh", {
@@ -52,6 +66,47 @@ export async function updateUser({ token, ...updates }) {
     method: "PATCH",
     token,
     body: JSON.stringify(updates),
+  });
+  return data;
+}
+
+// 1b. USER MEDIA (Cloudinary metadata stored in Postgres)
+// Backend routes:
+// - POST /uploads/cloudinary/sign
+// - GET  /users/me/media
+// - POST /users/me/media
+// - DELETE /users/me/media/<kind>
+
+export async function getMyMedia({ token }) {
+  const data = await apiFetch("/users/me/media", {
+    method: "GET",
+    token,
+  });
+  return data;
+}
+
+export async function signCloudinaryUpload({ token, kind }) {
+  const data = await apiFetch("/uploads/cloudinary/sign", {
+    method: "POST",
+    token,
+    body: JSON.stringify({ kind }),
+  });
+  return data;
+}
+
+export async function saveMyMedia({ token, media }) {
+  const data = await apiFetch("/users/me/media", {
+    method: "POST",
+    token,
+    body: JSON.stringify(media),
+  });
+  return data;
+}
+
+export async function deleteMyMedia({ token, kind }) {
+  const data = await apiFetch(`/users/me/media/${encodeURIComponent(kind)}`, {
+    method: "DELETE",
+    token,
   });
   return data;
 }
@@ -335,8 +390,8 @@ export async function removeUserSkill({ token, userId, skillName }) {
   return data;
 }
 
-export async function getSkillsForUser({ token, userId }) {
-  const data = await apiFetch(`/users-skills/${userId}/skills`, {
+export async function getSkillsForUser({ token }) {
+  const data = await apiFetch(`/users-skills/`, {
     method: "GET",
     token,
   });

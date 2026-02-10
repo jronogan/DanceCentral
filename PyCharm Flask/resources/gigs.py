@@ -85,7 +85,26 @@ def get_gigs():
     rows = cursor.fetchall()
     release_connection(conn)
 
-    return jsonify(status="ok", gigs=rows), 200
+    return jsonify(rows), 200
+
+@gigs.route("/mygigs")
+@jwt_required()
+def get_all_gigs_posted():
+    user_id = int(get_jwt_identity())
+    conn, cursor = get_cursor()
+
+    try:
+        cursor.execute(
+            """
+            SELECT g.gig_id, g.gig_name, g.gig_date, g.gig_details
+            FROM gigs g
+            WHERE g.posted_by_user_id = %s""",
+            (user_id,)
+        )
+        rows = cursor.fetchall()
+        return jsonify(rows), 200
+    finally:
+        release_connection(conn)
 
 @gigs.route("/<gig_id>", methods=["PATCH"])
 @jwt_required()

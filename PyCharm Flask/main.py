@@ -16,6 +16,9 @@ from resources.application_roles import applications_roles
 from resources.skills import skills
 from resources.event_types import event_types
 from resources.application_status import application_status
+from resources.member_types import member_types
+from resources.uploads import uploads
+from resources.user_media import user_media
 
 app = Flask(__name__)
 CORS(app)
@@ -35,11 +38,14 @@ app.register_blueprint(gigs, url_prefix='/gigs')
 
 app.register_blueprint(event_types, url_prefix='/event-types')
 app.register_blueprint(employer_members, url_prefix='/employer-members')
-
+app.register_blueprint(member_types, url_prefix='/member-types')
 app.register_blueprint(applications, url_prefix='/applications')
 app.register_blueprint(gigs_roles, url_prefix='/gigs-roles')
 app.register_blueprint(applications_roles, url_prefix='/applications-roles')
 app.register_blueprint(application_status, url_prefix='/application-status')
+app.register_blueprint(uploads, url_prefix='/uploads')
+app.register_blueprint(user_media, url_prefix='/users')
+
 
 if __name__ == '__main__':
     app.run(port=5002, debug=os.getenv('DEBUG', False))

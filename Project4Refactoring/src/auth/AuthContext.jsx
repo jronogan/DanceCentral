@@ -59,6 +59,8 @@ export function AuthProvider({ children }) {
       STORAGE_KEY,
       JSON.stringify({ token, user, roles, skills, activeRole }),
     );
+
+    console.log(user);
   }, [token, user, roles, skills, activeRole]);
 
   // Fallback retrieval of user skills and roles if localStorage fails to extract
@@ -75,12 +77,8 @@ export function AuthProvider({ children }) {
     (async () => {
       try {
         const [rolesArr, skillsArr] = await Promise.all([
-          needRoles
-            ? getRolesForUser({ token, userId: user.user_id })
-            : Promise.resolve(null),
-          needSkills
-            ? getSkillsForUser({ token, userId: user.user_id })
-            : Promise.resolve(null),
+          needRoles ? getRolesForUser({ token }) : Promise.resolve(null),
+          needSkills ? getSkillsForUser({ token }) : Promise.resolve(null),
         ]);
 
         if (cancelled) return;
@@ -144,7 +142,10 @@ export function AuthProvider({ children }) {
         setActiveRole((prev) => prev ?? rolesArr[0] ?? null);
 
         if (!skipEmployerLookup && rolesArr.includes("employer")) {
-          employer = await getEmployerFromUser({ token: accessToken });
+          const employmentDetails = await getEmployerFromUser({
+            token: accessToken,
+          });
+          employer = employmentDetails ?? null;
         }
       } catch {
         employer = null;
@@ -158,6 +159,7 @@ export function AuthProvider({ children }) {
       email: me?.email ?? email,
       dob: me?.dob ?? null,
       employer_id: employer?.employer_id ?? prev?.employer_id ?? null,
+      member_role: employer?.member_role ?? prev?.member_role ?? null,
     }));
 
     return { accessToken, me, employer };
@@ -244,7 +246,6 @@ export function AuthProvider({ children }) {
       }
 
       const fetchedSkills = await getSkillsForUser({
-        userId: newUserId,
         token: accessToken,
       });
       if (Array.isArray(fetchedSkills)) {
@@ -264,12 +265,13 @@ export function AuthProvider({ children }) {
       });
 
       const employerId = employerRes?.employer?.employer_id;
+      const memberRole = payload.employer.member_role ?? "member";
 
       if (employerId) {
         await createEmployerMember({
           token: accessToken,
           employerId,
-          memberRole: payload.employer.member_role ?? "member",
+          memberRole,
         });
 
         // Persist employer_id so EmployerPage can default it automatically.

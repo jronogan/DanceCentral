@@ -5,6 +5,91 @@ import psycopg2
 
 applications = Blueprint('applications', __name__)
 
+@applications.route("/", methods=["GET"])
+@jwt_required()
+def get_application():
+    user_id = int(get_jwt_identity())
+    gig_id_raw = request.args.get("gig_id")
+    conn, cursor = get_cursor()
+
+    try:
+        # Employer view: list applicants for a specific gig you posted
+        if gig_id_raw is not None:
+            try:
+                gig_id = int(gig_id_raw)
+            except ValueError:
+                return jsonify({"error": "gig_id must be an integer"}), 400
+
+            cursor.execute(
+                """
+                SELECT 1
+                FROM gigs
+                WHERE posted_by_user_id = %s AND gig_id = %s
+                """,
+                (user_id, gig_id),
+            )
+            posted = cursor.fetchone()
+            if not posted:
+                return jsonify({"error": "not authorized"}), 403
+
+            cursor.execute(
+                """
+                SELECT
+                    a.application_id,
+                    a.user_id,
+                    a.gig_id,
+                    a.status,
+                    a.applied_at,
+                    u.user_name AS applicant_name,
+                    u.email AS applicant_email,
+                    g.gig_name,
+                    g.gig_date,
+                    g.type_name,
+                    g.gig_details
+                FROM applications a
+                JOIN users u ON a.user_id = u.user_id
+                JOIN gigs g ON a.gig_id = g.gig_id
+                WHERE a.gig_id = %s
+                ORDER BY a.applied_at DESC
+                """,
+                (gig_id,),
+            )
+
+            applicants = cursor.fetchall() or []
+            return jsonify(applicants), 200
+
+        # User view: my applications
+        cursor.execute(
+            """
+            SELECT
+                a.application_id,
+                a.gig_id,
+                a.status,
+                a.applied_at,
+                g.gig_name,
+                g.gig_date,
+                g.type_name,
+                g.gig_details
+            FROM applications a
+            JOIN gigs g ON a.gig_id = g.gig_id
+            WHERE a.user_id = %s
+            ORDER BY a.applied_at DESC
+            """,
+            (user_id,),
+        )
+
+        applied = cursor.fetchall() or []
+        return jsonify(applied), 200
+
+    except Exception as e:
+        # During debugging, log the error so you don't silently swallow SQL issues
+        print("get_application error:", e)
+        return jsonify([]), 200
+
+    finally:
+        release_connection(conn)
+
+
 @applications.route('/', methods=['POST'])
 @jwt_required()
 def create_application():
@@ -43,56 +128,7 @@ def create_application():
     finally:
         release_connection(conn)
 
-@applications.route('/')
-@jwt_required()
-def get_application():
-    user_id = int(get_jwt_identity())
-    gig_id = request.args.get('gig_id')
-    conn, cursor = get_cursor()
 
-    try:
-        # Checking if it's the employer --> is it employer view?
-        if gig_id is not None:
-            cursor.execute(
-                """
-                SELECT gig_id FROM gigs
-                WHERE posted_by_user_id = %s AND gig_id = %s""",
-                (user_id, gig_id)
-            )
-            posted = cursor.fetchone()
-
-            if not posted:
-                return jsonify({'not authorized'}), 400
-
-            cursor.execute(
-                """
-                SELECT a.application_id, a.user_id, a.gig_id, a.status, a.applied_at
-                    FROM applications a
-                    WHERE a.gig_id = %s
-                    ORDER BY a.applied_at DESC""",
-                (gig_id,)
-            )
-            applicants = cursor.fetchall()
-            return jsonify(applicants), 200
-
-        cursor.execute(
-            """
-            SELECT application_id, user_id, gig_id, status, applied_at
-            FROM applications WHERE user_id = %s
-            ORDER BY gig_id ASC""",
-            (user_id,)
-        )
-        rows = cursor.fetchall() or []
-
-        # No applications isn't an error; return an empty list.
-        return jsonify(rows), 200
-
-    except Exception as e:
-        # Keep the frontend stable (empty list state) even if something goes wrong.
-        # If you want stricter behavior later, remove this catch and fix root cause.
-        return jsonify([]), 200
-    finally:
-        release_connection(conn)
 
 @applications.route('/', methods=['DELETE'])
 @jwt_required()
@@ -126,7 +162,7 @@ def update_application(application_id):
         return jsonify({"error": "Missing 'status'"}), 400
 
     allowed_for_employer = {"accepted", "rejected", "shortlisted"}
-    allowed_for_user = {"withdrawn"}
+    allowed_for_user = {"withdrawn, applied"}
 
     conn, cursor = get_cursor()
     try:
@@ -182,7 +218,7 @@ def update_application(application_id):
         updated = cursor.fetchone()
         conn.commit()
 
-        return jsonify(status="updated", update=updated), 200
+        return jsonify(updated), 200
 
     finally:
         release_connection(conn)

@@ -136,13 +136,15 @@ def get_employer_members():
     finally:
         release_connection(conn)
 
-@employer_members.route('/<user_id>')
-def get_employer_from_user(user_id):
+@employer_members.route('/me')
+@jwt_required()
+def get_employer_from_user():
+    user_id = int(get_jwt_identity())
     conn, cursor = get_cursor()
     try:
         cursor.execute(
             """
-            SELECT employer_id FROM employer_members 
+            SELECT employer_id, member_role FROM employer_members 
             WHERE user_id = %s
             """,
             (user_id,)

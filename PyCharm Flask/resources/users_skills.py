@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from db.db_pool import get_cursor, release_connection
 import psycopg2
 
@@ -53,9 +53,10 @@ def remove_skill():
 
     return jsonify(status="ok", msg="skill removed"), 200
 
-@users_skills.route("/<user_id>/skills", methods=["GET"])
+@users_skills.route("/", methods=["GET"])
 @jwt_required()
-def get_skills_for_user(user_id):
+def get_skills_for_user():
+    user_id = int(get_jwt_identity())
     conn, cursor = get_cursor()
 
     cursor.execute(

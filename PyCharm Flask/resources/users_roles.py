@@ -44,9 +44,10 @@ def remove_role():
 
     return jsonify(status="ok", msg="role removed"), 200
 
-@users_roles.route("/<user_id>/roles")
+@users_roles.route("/myroles")
 @jwt_required()
-def get_roles_for_user(user_id):
+def get_roles_for_user():
+    user_id = int(get_jwt_identity())
     conn, cursor = get_cursor()
     cursor.execute(
         "SELECT ur.role_name FROM users u JOIN users_roles ur ON u.user_id = ur.user_id WHERE ur.user_id = %s",

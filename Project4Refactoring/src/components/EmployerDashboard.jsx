@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import RoleDashboardSwitcher from "./RoleDashboardSwitcher";
 import { useAuth } from "../auth/AuthContext.jsx";
+import ApplicantProfileModal from "./ApplicantProfileModal";
 import {
   acceptApplication,
   createGig,
@@ -18,7 +19,10 @@ import {
 const EmployerDashboard = () => {
   const { token, user } = useAuth();
   const userId = user?.user_id ?? null;
+  const memberRole = user?.member_role ?? null;
   const queryClient = useQueryClient();
+
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
 
   const [gigName, setGigName] = useState("");
   const [gigDate, setGigDate] = useState("");
@@ -665,7 +669,12 @@ const EmployerDashboard = () => {
                     {applicantsByGigQuery.isLoading ? (
                       <div>Loading applicants…</div>
                     ) : applicantsByGigQuery.isError ? (
-                      <div>Couldn’t load applicants.</div>
+                      <div style={{ color: "#b91c1c" }}>
+                        {String(
+                          applicantsByGigQuery.error?.message ||
+                            "Couldn’t load applicants.",
+                        )}
+                      </div>
                     ) : applicants.length === 0 ? (
                       <div style={{ fontSize: 12, opacity: 0.8 }}>
                         No applications yet.
@@ -680,6 +689,9 @@ const EmployerDashboard = () => {
                           gap: 8,
                         }}
                       >
+                        <li style={{ fontSize: 12, opacity: 0.75 }}>
+                          Total: {applicants.length}
+                        </li>
                         {applicants.map((a) => (
                           <li
                             key={a.application_id ?? `${a.user_id}-${a.gig_id}`}
@@ -705,7 +717,36 @@ const EmployerDashboard = () => {
                                   alignItems: "center",
                                 }}
                               >
-                                <strong>Applicant #{a.user_id}</strong>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedApplicant({
+                                      userId: a.user_id,
+                                      name:
+                                        a.applicant_name ||
+                                        a.name ||
+                                        a.applicant_email ||
+                                        `Applicant #${a.user_id}`,
+                                    })
+                                  }
+                                  style={{
+                                    padding: 0,
+                                    border: 0,
+                                    background: "transparent",
+                                    fontWeight: 700,
+                                    cursor: "pointer",
+                                    textAlign: "left",
+                                    color: "#111827",
+                                    textDecoration: "underline",
+                                    textUnderlineOffset: 3,
+                                  }}
+                                  title="View applicant profile"
+                                >
+                                  {a.applicant_name ||
+                                    a.name ||
+                                    a.applicant_email ||
+                                    `Applicant #${a.user_id}`}
+                                </button>
                                 <span style={statusPillStyle(a.status)}>
                                   {a.status ?? "applied"}
                                 </span>
@@ -786,6 +827,15 @@ const EmployerDashboard = () => {
           </ul>
         )}
       </section>
+
+      {selectedApplicant ? (
+        <ApplicantProfileModal
+          token={token}
+          userId={selectedApplicant.userId}
+          applicantName={selectedApplicant.name}
+          onClose={() => setSelectedApplicant(null)}
+        />
+      ) : null}
     </div>
   );
 };
