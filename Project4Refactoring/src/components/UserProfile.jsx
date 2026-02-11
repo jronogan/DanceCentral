@@ -263,6 +263,11 @@ export default function UserProfile() {
     enabled: Boolean(token),
   });
 
+  const avatarUrl =
+    myMediaQuery.data?.profile_photo?.secure_url ||
+    myMediaQuery.data?.profile_photo?.url ||
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Crect width='160' height='160' fill='%231B3C53'/%3E%3Ccircle cx='80' cy='62' r='28' fill='%23D2C1B6'/%3E%3Cpath d='M30 140c10-28 33-42 50-42s40 14 50 42' fill='%23D2C1B6'/%3E%3C/svg%3E";
+
   const [uploadStatus, setUploadStatus] = useState({
     profile_photo: null,
     resume: null,
@@ -332,119 +337,295 @@ export default function UserProfile() {
   }
 
   return (
-    <div style={{ padding: 16, display: "grid", gap: 16, maxWidth: 860 }}>
-      <h2 style={{ margin: 0 }}>My profile</h2>
+    <div className="dc-page">
+      <div className="dc-profile">
+        <h2 className="dc-profile__title">My Profile</h2>
 
-      <section
-        style={{
-          border: "1px solid var(--dc-border)",
-          borderRadius: 8,
-          padding: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h3 style={{ margin: 0 }}>Account info</h3>
-          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-            {isEditingAccount ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setName(displayName);
-                    setEmail(displayEmail);
-                    setDateOfBirth(toISODateInputValue(user?.dob));
-                    setIsEditingAccount(false);
+        <section className="dc-profile-card">
+          <div className="dc-profile-hero">
+            <img
+              className="dc-profile-hero__avatar"
+              src={avatarUrl}
+              alt="Profile"
+              loading="lazy"
+            />
+            <div className="dc-profile-hero__meta">
+              <p className="dc-profile-hero__name">{displayName || "—"}</p>
+              <div className="dc-profile-hero__sub">
+                {formatString(activeRoleName || "user")}
+              </div>
+              <div className="dc-profile-hero__sub">{displayEmail || "—"}</div>
+            </div>
+          </div>
+        </section>
+
+        <section className="dc-profile-card">
+          <div className="dc-profile-section__header">
+            <h3>Personal Information</h3>
+            <div style={{ display: "flex", gap: 8 }}>
+              {isEditingAccount ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setName(displayName);
+                      setEmail(displayEmail);
+                      setDateOfBirth(toISODateInputValue(user?.dob));
+                      setIsEditingAccount(false);
+                    }}
+                    disabled={updateUserMutation.isPending}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateUserMutation.mutate()}
+                    disabled={updateUserMutation.isPending || !token}
+                  >
+                    {updateUserMutation.isPending ? "Saving…" : "Save"}
+                  </button>
+                </>
+              ) : (
+                <button type="button" onClick={() => setIsEditingAccount(true)}>
+                  Edit
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="dc-profile-grid">
+            <div className="dc-field">
+              <div className="dc-field__label">Name</div>
+              {isEditingAccount ? (
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  style={{
+                    padding: 8,
+                    borderRadius: 10,
+                    border: "1px solid var(--dc-border)",
                   }}
-                  disabled={updateUserMutation.isPending}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateUserMutation.mutate()}
-                  disabled={updateUserMutation.isPending || !token}
-                >
-                  {updateUserMutation.isPending ? "Saving…" : "Save"}
-                </button>
-              </>
-            ) : (
-              <button type="button" onClick={() => setIsEditingAccount(true)}>
-                Edit
-              </button>
-            )}
-          </div>
-        </div>
+                />
+              ) : (
+                <div className="dc-field__value">{displayName || "—"}</div>
+              )}
+            </div>
 
-        <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "160px 1fr",
-              gap: 8,
-              alignItems: "center",
-            }}
-          >
-            <div style={{ fontWeight: 600, opacity: 0.85 }}>Name</div>
-            {isEditingAccount ? (
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={{
-                  padding: 8,
-                  borderRadius: 6,
-                  border: "1px solid var(--dc-border)",
-                }}
-              />
-            ) : (
-              <div>{displayEmail || "—"}</div>
-            )}
-          </div>
+            <div className="dc-field">
+              <div className="dc-field__label">Email Address</div>
+              {isEditingAccount ? (
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  style={{
+                    padding: 8,
+                    borderRadius: 10,
+                    border: "1px solid var(--dc-border)",
+                  }}
+                />
+              ) : (
+                <div className="dc-field__value">{displayEmail || "—"}</div>
+              )}
+            </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "160px 1fr",
-              gap: 8,
-              alignItems: "center",
-            }}
-          >
-            <div style={{ fontWeight: 600, opacity: 0.85 }}>Date of birth</div>
-            {isEditingAccount ? (
-              <input
-                type="date"
-                value={dateOfBirth || ""}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                style={{
-                  padding: 8,
-                  borderRadius: 6,
-                  border: "1px solid var(--dc-border)",
-                  maxWidth: 220,
-                }}
-              />
-            ) : (
-              <div>{displayDob || "—"}</div>
-            )}
+            <div className="dc-field">
+              <div className="dc-field__label">Date of Birth</div>
+              {isEditingAccount ? (
+                <input
+                  type="date"
+                  value={dateOfBirth || ""}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  style={{
+                    padding: 8,
+                    borderRadius: 10,
+                    border: "1px solid var(--dc-border)",
+                    maxWidth: 240,
+                  }}
+                />
+              ) : (
+                <div className="dc-field__value">{displayDob || "—"}</div>
+              )}
+            </div>
+
+            <div className="dc-field">
+              <div className="dc-field__label">User Role</div>
+              <div className="dc-field__value">
+                {formatString(activeRoleName || "user")}
+              </div>
+            </div>
+
+            <div className="dc-field">
+              <div className="dc-field__label">User ID</div>
+              <div className="dc-field__value">{userId ?? "—"}</div>
+            </div>
           </div>
 
           {updateUserMutation.isError ? (
-            <div style={{ color: "var(--dc-danger)" }}>
+            <div style={{ color: "var(--dc-danger)", marginTop: 12 }}>
               {String(updateUserMutation.error?.message || "Update failed")}
             </div>
           ) : null}
 
-          <div style={{ fontSize: 12, opacity: 0.85 }}>
-            <div>User ID: {userId ?? "—"}</div>
+          <div style={{ marginTop: 14, display: "flex", gap: 10 }}>
+            <button type="button" onClick={() => navigate(-1)}>
+              Back
+            </button>
           </div>
-        </div>
+        </section>
 
-        <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-          <button type="button" onClick={() => navigate(-1)}>
-            Back
-          </button>
-        </div>
-      </section>
+        {isEmployerView ? (
+          <section
+            style={{
+              border: "1px solid var(--dc-border)",
+              borderRadius: 8,
+              padding: 12,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <h3 style={{ margin: 0 }}>Employer</h3>
+            </div>
 
-      {isEmployerView ? (
+            <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "160px 1fr",
+                  gap: 8,
+                  alignItems: "center",
+                }}
+              >
+                <div style={{ fontWeight: 600, opacity: 0.85 }}>
+                  Employer ID
+                </div>
+                <div>{employerMemberQuery.data?.employer_id ?? "—"}</div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "160px 1fr",
+                  gap: 8,
+                  alignItems: "center",
+                }}
+              >
+                <div style={{ fontWeight: 600, opacity: 0.85 }}>
+                  Employer name
+                </div>
+                <div>{employerDetailsQuery.data?.employer_name ?? "—"}</div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "160px 1fr",
+                  gap: 8,
+                  alignItems: "center",
+                }}
+              >
+                <div style={{ fontWeight: 600, opacity: 0.85 }}>
+                  My member role
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {isEditingMemberRole ? (
+                    <>
+                      <select
+                        value={memberRole}
+                        onChange={(e) => setMemberRole(e.target.value)}
+                        disabled={
+                          memberTypesQuery.isLoading ||
+                          memberTypesQuery.isError ||
+                          memberTypeOptions.length === 0
+                        }
+                        style={{
+                          padding: 8,
+                          borderRadius: 6,
+                          border: "1px solid var(--dc-border)",
+                          minWidth: 280,
+                        }}
+                      >
+                        <option value="">Select member role</option>
+                        {memberTypeOptions.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMemberRole(
+                            employerMemberQuery.data?.member_role ?? "",
+                          );
+                          setIsEditingMemberRole(false);
+                        }}
+                        disabled={updateEmployerMemberMutation.isPending}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateEmployerMember()}
+                        disabled={
+                          updateEmployerMemberMutation.isPending ||
+                          !memberRole ||
+                          memberTypesQuery.isLoading ||
+                          memberTypesQuery.isError
+                        }
+                      >
+                        {updateEmployerMemberMutation.isPending
+                          ? "Saving…"
+                          : "Save"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ minWidth: 280 }}>{memberRole || "—"}</div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMemberRole(
+                            employerMemberQuery.data?.member_role ?? "",
+                          );
+                          setIsEditingMemberRole(true);
+                        }}
+                        disabled={memberTypesQuery.isLoading}
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {employerMemberQuery.isError || employerDetailsQuery.isError ? (
+                <div style={{ color: "var(--dc-danger)" }}>
+                  {String(
+                    employerMemberQuery.error?.message ||
+                      employerDetailsQuery.error?.message ||
+                      "Failed to load employer details",
+                  )}
+                </div>
+              ) : null}
+
+              {updateEmployerMemberMutation.isError ? (
+                <div style={{ color: "var(--dc-danger)" }}>
+                  {String(
+                    updateEmployerMemberMutation.error?.message ||
+                      "Failed to update employer member",
+                  )}
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
+
         <section
           style={{
             border: "1px solid var(--dc-border)",
@@ -453,477 +634,246 @@ export default function UserProfile() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <h3 style={{ margin: 0 }}>Employer</h3>
+            <h3 style={{ margin: 0 }}>Uploads</h3>
+            <div style={{ marginLeft: "auto", fontSize: 12, opacity: 0.8 }}>
+              One active file per type.
+            </div>
           </div>
 
-          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+          <div style={{ marginTop: 12, display: "grid", gap: 14 }}>
+            {/* Profile photo */}
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "160px 1fr",
-                gap: 8,
-                alignItems: "center",
-              }}
-            >
-              <div style={{ fontWeight: 600, opacity: 0.85 }}>Employer ID</div>
-              <div>{employerMemberQuery.data?.employer_id ?? "—"}</div>
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "160px 1fr",
-                gap: 8,
-                alignItems: "center",
+                gap: 10,
+                alignItems: "start",
               }}
             >
               <div style={{ fontWeight: 600, opacity: 0.85 }}>
-                Employer name
+                Profile photo
               </div>
-              <div>{employerDetailsQuery.data?.employer_name ?? "—"}</div>
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "160px 1fr",
-                gap: 8,
-                alignItems: "center",
-              }}
-            >
-              <div style={{ fontWeight: 600, opacity: 0.85 }}>
-                My member role
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
-                {isEditingMemberRole ? (
-                  <>
-                    <select
-                      value={memberRole}
-                      onChange={(e) => setMemberRole(e.target.value)}
-                      disabled={
-                        memberTypesQuery.isLoading ||
-                        memberTypesQuery.isError ||
-                        memberTypeOptions.length === 0
-                      }
-                      style={{
-                        padding: 8,
-                        borderRadius: 6,
-                        border: "1px solid var(--dc-border)",
-                        minWidth: 280,
-                      }}
-                    >
-                      <option value="">Select member role</option>
-                      {memberTypeOptions.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMemberRole(
-                          employerMemberQuery.data?.member_role ?? "",
-                        );
-                        setIsEditingMemberRole(false);
-                      }}
-                      disabled={updateEmployerMemberMutation.isPending}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleUpdateEmployerMember()}
-                      disabled={
-                        updateEmployerMemberMutation.isPending ||
-                        !memberRole ||
-                        memberTypesQuery.isLoading ||
-                        memberTypesQuery.isError
-                      }
-                    >
-                      {updateEmployerMemberMutation.isPending
-                        ? "Saving…"
-                        : "Save"}
-                    </button>
-                  </>
+              <div style={{ display: "grid", gap: 8 }}>
+                {myMediaQuery.data?.profile_photo?.secure_url ? (
+                  <img
+                    alt="Profile"
+                    src={myMediaQuery.data.profile_photo.secure_url}
+                    style={{
+                      width: 96,
+                      height: 96,
+                      borderRadius: 12,
+                      objectFit: "cover",
+                    }}
+                  />
                 ) : (
-                  <>
-                    <div style={{ minWidth: 280 }}>{memberRole || "—"}</div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMemberRole(
-                          employerMemberQuery.data?.member_role ?? "",
-                        );
-                        setIsEditingMemberRole(true);
-                      }}
-                      disabled={memberTypesQuery.isLoading}
-                    >
-                      Edit
-                    </button>
-                  </>
+                  <div style={{ opacity: 0.8 }}>No profile photo uploaded.</div>
                 )}
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    onChange={(e) =>
+                      uploadToCloudinary({
+                        kind: "profile_photo",
+                        file: e.target.files?.[0],
+                      }).catch((err) =>
+                        setUploadStatus((prev) => ({
+                          ...prev,
+                          profile_photo: String(
+                            err?.message || "Upload failed",
+                          ),
+                        })),
+                      )
+                    }
+                    disabled={!token || saveMediaMutation.isPending}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => deleteMediaMutation.mutate("profile_photo")}
+                    disabled={
+                      !myMediaQuery.data?.profile_photo ||
+                      deleteMediaMutation.isPending
+                    }
+                  >
+                    Remove
+                  </button>
+                  {uploadStatus.profile_photo ? (
+                    <span style={{ fontSize: 12, opacity: 0.85 }}>
+                      {uploadStatus.profile_photo}
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </div>
 
-            {employerMemberQuery.isError || employerDetailsQuery.isError ? (
+            {!isEmployerView ? (
+              <>
+                {/* Resume */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "160px 1fr",
+                    gap: 10,
+                    alignItems: "start",
+                  }}
+                >
+                  <div style={{ fontWeight: 600, opacity: 0.85 }}>
+                    Resume (PDF)
+                  </div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {myMediaQuery.data?.resume?.secure_url ? (
+                      <a
+                        href={myMediaQuery.data.resume.secure_url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View current resume
+                      </a>
+                    ) : (
+                      <div style={{ opacity: 0.8 }}>No resume uploaded.</div>
+                    )}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) =>
+                          uploadToCloudinary({
+                            kind: "resume",
+                            file: e.target.files?.[0],
+                          }).catch((err) =>
+                            setUploadStatus((prev) => ({
+                              ...prev,
+                              resume: String(err?.message || "Upload failed"),
+                            })),
+                          )
+                        }
+                        disabled={!token || saveMediaMutation.isPending}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => deleteMediaMutation.mutate("resume")}
+                        disabled={
+                          !myMediaQuery.data?.resume ||
+                          deleteMediaMutation.isPending
+                        }
+                      >
+                        Remove
+                      </button>
+                      {uploadStatus.resume ? (
+                        <span style={{ fontSize: 12, opacity: 0.85 }}>
+                          {uploadStatus.resume}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Showreel */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "160px 1fr",
+                    gap: 10,
+                    alignItems: "start",
+                  }}
+                >
+                  <div style={{ fontWeight: 600, opacity: 0.85 }}>
+                    Showreel (MP4)
+                  </div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {myMediaQuery.data?.showreel?.secure_url ? (
+                      <video
+                        src={myMediaQuery.data.showreel.secure_url}
+                        controls
+                        style={{
+                          width: "100%",
+                          maxWidth: 520,
+                          borderRadius: 10,
+                        }}
+                      />
+                    ) : (
+                      <div style={{ opacity: 0.8 }}>No showreel uploaded.</div>
+                    )}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        type="file"
+                        accept="video/mp4"
+                        onChange={(e) =>
+                          uploadToCloudinary({
+                            kind: "showreel",
+                            file: e.target.files?.[0],
+                          }).catch((err) =>
+                            setUploadStatus((prev) => ({
+                              ...prev,
+                              showreel: String(err?.message || "Upload failed"),
+                            })),
+                          )
+                        }
+                        disabled={!token || saveMediaMutation.isPending}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => deleteMediaMutation.mutate("showreel")}
+                        disabled={
+                          !myMediaQuery.data?.showreel ||
+                          deleteMediaMutation.isPending
+                        }
+                      >
+                        Remove
+                      </button>
+                      {uploadStatus.showreel ? (
+                        <span style={{ fontSize: 12, opacity: 0.85 }}>
+                          {uploadStatus.showreel}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {myMediaQuery.isError ? (
               <div style={{ color: "var(--dc-danger)" }}>
                 {String(
-                  employerMemberQuery.error?.message ||
-                    employerDetailsQuery.error?.message ||
-                    "Failed to load employer details",
+                  myMediaQuery.error?.message || "Failed to load uploads",
                 )}
               </div>
             ) : null}
 
-            {updateEmployerMemberMutation.isError ? (
+            {saveMediaMutation.isError || deleteMediaMutation.isError ? (
               <div style={{ color: "var(--dc-danger)" }}>
                 {String(
-                  updateEmployerMemberMutation.error?.message ||
-                    "Failed to update employer member",
+                  saveMediaMutation.error?.message ||
+                    deleteMediaMutation.error?.message ||
+                    "Upload update failed",
                 )}
               </div>
             ) : null}
           </div>
         </section>
-      ) : null}
 
-      <section
-        style={{
-          border: "1px solid var(--dc-border)",
-          borderRadius: 8,
-          padding: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h3 style={{ margin: 0 }}>Uploads</h3>
-          <div style={{ marginLeft: "auto", fontSize: 12, opacity: 0.8 }}>
-            One active file per type.
-          </div>
-        </div>
-
-        <div style={{ marginTop: 12, display: "grid", gap: 14 }}>
-          {/* Profile photo */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "160px 1fr",
-              gap: 10,
-              alignItems: "start",
-            }}
-          >
-            <div style={{ fontWeight: 600, opacity: 0.85 }}>Profile photo</div>
-            <div style={{ display: "grid", gap: 8 }}>
-              {myMediaQuery.data?.profile_photo?.secure_url ? (
-                <img
-                  alt="Profile"
-                  src={myMediaQuery.data.profile_photo.secure_url}
-                  style={{
-                    width: 96,
-                    height: 96,
-                    borderRadius: 12,
-                    objectFit: "cover",
-                  }}
-                />
-              ) : (
-                <div style={{ opacity: 0.8 }}>No profile photo uploaded.</div>
-              )}
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                }}
-              >
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg"
-                  onChange={(e) =>
-                    uploadToCloudinary({
-                      kind: "profile_photo",
-                      file: e.target.files?.[0],
-                    }).catch((err) =>
-                      setUploadStatus((prev) => ({
-                        ...prev,
-                        profile_photo: String(err?.message || "Upload failed"),
-                      })),
-                    )
-                  }
-                  disabled={!token || saveMediaMutation.isPending}
-                />
-                <button
-                  type="button"
-                  onClick={() => deleteMediaMutation.mutate("profile_photo")}
-                  disabled={
-                    !myMediaQuery.data?.profile_photo ||
-                    deleteMediaMutation.isPending
-                  }
-                >
-                  Remove
-                </button>
-                {uploadStatus.profile_photo ? (
-                  <span style={{ fontSize: 12, opacity: 0.85 }}>
-                    {uploadStatus.profile_photo}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          {!isEmployerView ? (
-            <>
-              {/* Resume */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "160px 1fr",
-                  gap: 10,
-                  alignItems: "start",
-                }}
-              >
-                <div style={{ fontWeight: 600, opacity: 0.85 }}>
-                  Resume (PDF)
-                </div>
-                <div style={{ display: "grid", gap: 8 }}>
-                  {myMediaQuery.data?.resume?.secure_url ? (
-                    <a
-                      href={myMediaQuery.data.resume.secure_url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      View current resume
-                    </a>
-                  ) : (
-                    <div style={{ opacity: 0.8 }}>No resume uploaded.</div>
-                  )}
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 8,
-                      flexWrap: "wrap",
-                      alignItems: "center",
-                    }}
-                  >
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      onChange={(e) =>
-                        uploadToCloudinary({
-                          kind: "resume",
-                          file: e.target.files?.[0],
-                        }).catch((err) =>
-                          setUploadStatus((prev) => ({
-                            ...prev,
-                            resume: String(err?.message || "Upload failed"),
-                          })),
-                        )
-                      }
-                      disabled={!token || saveMediaMutation.isPending}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => deleteMediaMutation.mutate("resume")}
-                      disabled={
-                        !myMediaQuery.data?.resume ||
-                        deleteMediaMutation.isPending
-                      }
-                    >
-                      Remove
-                    </button>
-                    {uploadStatus.resume ? (
-                      <span style={{ fontSize: 12, opacity: 0.85 }}>
-                        {uploadStatus.resume}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-
-              {/* Showreel */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "160px 1fr",
-                  gap: 10,
-                  alignItems: "start",
-                }}
-              >
-                <div style={{ fontWeight: 600, opacity: 0.85 }}>
-                  Showreel (MP4)
-                </div>
-                <div style={{ display: "grid", gap: 8 }}>
-                  {myMediaQuery.data?.showreel?.secure_url ? (
-                    <video
-                      src={myMediaQuery.data.showreel.secure_url}
-                      controls
-                      style={{
-                        width: "100%",
-                        maxWidth: 520,
-                        borderRadius: 10,
-                      }}
-                    />
-                  ) : (
-                    <div style={{ opacity: 0.8 }}>No showreel uploaded.</div>
-                  )}
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 8,
-                      flexWrap: "wrap",
-                      alignItems: "center",
-                    }}
-                  >
-                    <input
-                      type="file"
-                      accept="video/mp4"
-                      onChange={(e) =>
-                        uploadToCloudinary({
-                          kind: "showreel",
-                          file: e.target.files?.[0],
-                        }).catch((err) =>
-                          setUploadStatus((prev) => ({
-                            ...prev,
-                            showreel: String(err?.message || "Upload failed"),
-                          })),
-                        )
-                      }
-                      disabled={!token || saveMediaMutation.isPending}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => deleteMediaMutation.mutate("showreel")}
-                      disabled={
-                        !myMediaQuery.data?.showreel ||
-                        deleteMediaMutation.isPending
-                      }
-                    >
-                      Remove
-                    </button>
-                    {uploadStatus.showreel ? (
-                      <span style={{ fontSize: 12, opacity: 0.85 }}>
-                        {uploadStatus.showreel}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : null}
-
-          {myMediaQuery.isError ? (
-            <div style={{ color: "var(--dc-danger)" }}>
-              {String(myMediaQuery.error?.message || "Failed to load uploads")}
-            </div>
-          ) : null}
-
-          {saveMediaMutation.isError || deleteMediaMutation.isError ? (
-            <div style={{ color: "var(--dc-danger)" }}>
-              {String(
-                saveMediaMutation.error?.message ||
-                  deleteMediaMutation.error?.message ||
-                  "Upload update failed",
-              )}
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      <section
-        style={{
-          border: "1px solid var(--dc-border)",
-          borderRadius: 8,
-          padding: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h3 style={{ margin: 0 }}>Roles</h3>
-          <div style={{ marginLeft: "auto" }}>
-            <button type="button" onClick={() => setIsEditingRoles((v) => !v)}>
-              {isEditingRoles ? "Done" : "Edit"}
-            </button>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {myRoleNames.length === 0 ? (
-              <div style={{ opacity: 0.8 }}>No roles.</div>
-            ) : (
-              myRoleNames.map((r) => (
-                <div key={r} style={chipStyle}>
-                  <span style={{ fontWeight: 600 }}>{r}</span>
-                  {isEditingRoles ? (
-                    <button
-                      type="button"
-                      onClick={() => removeRoleMutation.mutate(r)}
-                      disabled={removeRoleMutation.isPending}
-                      style={{ padding: "2px 8px" }}
-                    >
-                      Remove
-                    </button>
-                  ) : null}
-                </div>
-              ))
-            )}
-          </div>
-
-          {isEditingRoles ? (
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              <select
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value)}
-                disabled={availableRoleOptions.length === 0}
-              >
-                <option value="">Add a role…</option>
-                {availableRoleOptions.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!newRole) return;
-                  addRoleMutation.mutate(newRole);
-                  setNewRole("");
-                }}
-                disabled={!newRole || addRoleMutation.isPending}
-              >
-                Add role
-              </button>
-            </div>
-          ) : null}
-
-          {addSkillMutation.isError || removeSkillMutation.isError ? (
-            <div style={{ color: "var(--dc-danger)" }}>
-              {String(
-                addSkillMutation.error?.message ||
-                  removeSkillMutation.error?.message ||
-                  "Skill update failed",
-              )}
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      {!isEmployerView ? (
         <section
           style={{
             border: "1px solid var(--dc-border)",
@@ -932,30 +882,30 @@ export default function UserProfile() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <h3 style={{ margin: 0 }}>Skills</h3>
+            <h3 style={{ margin: 0 }}>Roles</h3>
             <div style={{ marginLeft: "auto" }}>
               <button
                 type="button"
-                onClick={() => setIsEditingSkills((v) => !v)}
+                onClick={() => setIsEditingRoles((v) => !v)}
               >
-                {isEditingSkills ? "Done" : "Edit"}
+                {isEditingRoles ? "Done" : "Edit"}
               </button>
             </div>
           </div>
 
           <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {mySkillNames.length === 0 ? (
-                <div style={{ opacity: 0.8 }}>No skills.</div>
+              {myRoleNames.length === 0 ? (
+                <div style={{ opacity: 0.8 }}>No roles.</div>
               ) : (
-                mySkillNames.map((s) => (
-                  <div key={s} style={chipStyle}>
-                    <span style={{ fontWeight: 600 }}>{formatString(s)}</span>
-                    {isEditingSkills ? (
+                myRoleNames.map((r) => (
+                  <div key={r} style={chipStyle}>
+                    <span style={{ fontWeight: 600 }}>{r}</span>
+                    {isEditingRoles ? (
                       <button
                         type="button"
-                        onClick={() => removeSkillMutation.mutate(s)}
-                        disabled={removeSkillMutation.isPending}
+                        onClick={() => removeRoleMutation.mutate(r)}
+                        disabled={removeRoleMutation.isPending}
                         style={{ padding: "2px 8px" }}
                       >
                         Remove
@@ -966,7 +916,7 @@ export default function UserProfile() {
               )}
             </div>
 
-            {isEditingSkills ? (
+            {isEditingRoles ? (
               <div
                 style={{
                   display: "flex",
@@ -976,27 +926,27 @@ export default function UserProfile() {
                 }}
               >
                 <select
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  disabled={availableSkillOptions.length === 0}
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                  disabled={availableRoleOptions.length === 0}
                 >
-                  <option value="">Add a skill…</option>
-                  {availableSkillOptions.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
+                  <option value="">Add a role…</option>
+                  {availableRoleOptions.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
                     </option>
                   ))}
                 </select>
                 <button
                   type="button"
                   onClick={() => {
-                    if (!newSkill) return;
-                    addSkillMutation.mutate(newSkill);
-                    setNewSkill("");
+                    if (!newRole) return;
+                    addRoleMutation.mutate(newRole);
+                    setNewRole("");
                   }}
-                  disabled={!newSkill || addSkillMutation.isPending}
+                  disabled={!newRole || addRoleMutation.isPending}
                 >
-                  Add skill
+                  Add role
                 </button>
               </div>
             ) : null}
@@ -1012,7 +962,98 @@ export default function UserProfile() {
             ) : null}
           </div>
         </section>
-      ) : null}
+
+        {!isEmployerView ? (
+          <section
+            style={{
+              border: "1px solid var(--dc-border)",
+              borderRadius: 8,
+              padding: 12,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <h3 style={{ margin: 0 }}>Skills</h3>
+              <div style={{ marginLeft: "auto" }}>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingSkills((v) => !v)}
+                >
+                  {isEditingSkills ? "Done" : "Edit"}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {mySkillNames.length === 0 ? (
+                  <div style={{ opacity: 0.8 }}>No skills.</div>
+                ) : (
+                  mySkillNames.map((s) => (
+                    <div key={s} style={chipStyle}>
+                      <span style={{ fontWeight: 600 }}>{formatString(s)}</span>
+                      {isEditingSkills ? (
+                        <button
+                          type="button"
+                          onClick={() => removeSkillMutation.mutate(s)}
+                          disabled={removeSkillMutation.isPending}
+                          style={{ padding: "2px 8px" }}
+                        >
+                          Remove
+                        </button>
+                      ) : null}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {isEditingSkills ? (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <select
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    disabled={availableSkillOptions.length === 0}
+                  >
+                    <option value="">Add a skill…</option>
+                    {availableSkillOptions.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newSkill) return;
+                      addSkillMutation.mutate(newSkill);
+                      setNewSkill("");
+                    }}
+                    disabled={!newSkill || addSkillMutation.isPending}
+                  >
+                    Add skill
+                  </button>
+                </div>
+              ) : null}
+
+              {addSkillMutation.isError || removeSkillMutation.isError ? (
+                <div style={{ color: "var(--dc-danger)" }}>
+                  {String(
+                    addSkillMutation.error?.message ||
+                      removeSkillMutation.error?.message ||
+                      "Skill update failed",
+                  )}
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
+      </div>
     </div>
   );
 }

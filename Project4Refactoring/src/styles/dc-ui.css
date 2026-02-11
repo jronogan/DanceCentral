@@ -1,0 +1,420 @@
+/* DanceCentral UI layer
+   Goal: provide reusable layout + component styles so dashboards can match
+   the reference designs while still using the existing palette tokens in index.css.
+*/
+
+:root {
+  --dc-radius-sm: 10px;
+  --dc-radius-md: 16px;
+  --dc-radius-lg: 22px;
+
+  --dc-shadow-1: 0 14px 40px rgba(0, 0, 0, 0.25);
+  --dc-shadow-2: 0 10px 24px rgba(0, 0, 0, 0.18);
+
+  --dc-success: #22c55e;
+  --dc-success-bg: rgba(34, 197, 94, 0.18);
+
+  --dc-warning: #f59e0b;
+  --dc-warning-bg: rgba(245, 158, 11, 0.18);
+
+  --dc-info: #60a5fa;
+  --dc-info-bg: rgba(96, 165, 250, 0.18);
+
+  --dc-danger-bg: rgba(255, 107, 107, 0.18);
+
+  /* Top bar accents tuned to the current palette */
+  --dc-accent-start: rgba(255, 255, 255, 0.08);
+  --dc-accent-end: rgba(255, 255, 255, 0.04);
+}
+
+/* Page background like the screenshots */
+.dc-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      1200px 600px at 50% 0%,
+      rgba(255, 255, 255, 0.06),
+      transparent 55%
+    ),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.12), transparent 40%), var(--dc-bg);
+}
+
+.dc-container {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 22px 0 56px;
+  display: grid;
+  gap: 18px;
+}
+
+/* Top bar */
+.dc-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px;
+  border-radius: var(--dc-radius-lg);
+  background: linear-gradient(
+    90deg,
+    var(--dc-accent-start),
+    var(--dc-accent-end)
+  );
+  border: 1px solid var(--dc-border);
+  box-shadow: var(--dc-shadow-2);
+}
+
+.dc-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dc-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.dc-topbar__title {
+  display: grid;
+  gap: 2px;
+}
+
+.dc-topbar__title strong {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.dc-topbar__title span {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.dc-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Cards */
+.dc-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--dc-border);
+  border-radius: var(--dc-radius-lg);
+  padding: 18px;
+  box-shadow: var(--dc-shadow-2);
+}
+
+.dc-card--flat {
+  box-shadow: none;
+  border-radius: var(--dc-radius-md);
+}
+
+.dc-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dc-card__title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.dc-card__subtitle {
+  margin-top: 4px;
+  color: var(--dc-text-muted);
+  font-size: 13px;
+}
+
+.dc-card__meta {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+.dc-section-title {
+  margin: 0;
+  font-size: 16px;
+}
+
+.dc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dc-stack {
+  display: grid;
+  gap: 12px;
+}
+
+/* 2-col dashboard sections (Skills + Applied gigs) */
+.dc-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media (max-width: 900px) {
+  .dc-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Skills as clean chips (no bullet list) */
+.dc-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dc-skill {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--dc-border);
+  background: rgba(0, 0, 0, 0.16);
+  color: var(--dc-text);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* Profile page (matches reference layout while keeping palette) */
+.dc-profile {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 22px 0 56px;
+  display: grid;
+  gap: 18px;
+}
+
+.dc-profile__title {
+  margin: 0;
+  font-size: 20px;
+  text-align: center;
+}
+
+.dc-profile-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--dc-border);
+  border-radius: var(--dc-radius-lg);
+  padding: 18px;
+  box-shadow: var(--dc-shadow-2);
+}
+
+.dc-profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  justify-content: center;
+  text-align: center;
+}
+
+.dc-profile-hero__avatar {
+  width: 92px;
+  height: 92px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.18);
+  object-fit: cover;
+}
+
+.dc-profile-hero__meta {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+}
+
+.dc-profile-hero__name {
+  font-size: 18px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.dc-profile-hero__sub {
+  font-size: 13px;
+  color: var(--dc-text-muted);
+}
+
+.dc-profile-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dc-profile-section__header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.dc-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 900px) {
+  .dc-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dc-field {
+  display: grid;
+  gap: 6px;
+}
+
+.dc-field__label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.dc-field__value {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--dc-text);
+}
+
+/* Pills / badges */
+.dc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid var(--dc-border);
+  background: rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+
+.dc-pill--success {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: var(--dc-success-bg);
+  color: #d1fae5;
+}
+
+.dc-pill--warning {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: var(--dc-warning-bg);
+  color: #ffedd5;
+}
+
+.dc-pill--danger {
+  border-color: rgba(255, 107, 107, 0.5);
+  background: var(--dc-danger-bg);
+  color: #ffe4e6;
+}
+
+.dc-pill--info {
+  border-color: rgba(96, 165, 250, 0.5);
+  background: var(--dc-info-bg);
+  color: #dbeafe;
+}
+
+/* Buttons */
+.dc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--dc-border);
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+}
+
+.dc-btn--primary {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.22);
+}
+
+.dc-btn--danger {
+  border-color: rgba(255, 107, 107, 0.55);
+  background: rgba(255, 107, 107, 0.22);
+}
+
+.dc-btn--ghost {
+  background: transparent;
+}
+
+/* Info bar like “Pending / Accepted / Rejected” */
+.dc-statsbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 14px;
+  border-radius: var(--dc-radius-md);
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+.dc-statsbar strong {
+  font-size: 14px;
+}
+
+.dc-statsbar .dc-count {
+  font-weight: 900;
+}
+
+/* Applicant row */
+.dc-applicant {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--dc-radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dc-border);
+}
+
+.dc-applicant__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dc-applicant__name {
+  font-weight: 800;
+}
+
+.dc-applicant__role {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Auth card */
+.dc-auth {
+  width: min(560px, calc(100% - 32px));
+  margin: calc(6vh + 24px) auto 0;
+  padding: 26px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--dc-border);
+  box-shadow: var(--dc-shadow-1);
+}
+
+.dc-auth h2 {
+  margin: 0 0 6px 0;
+  text-align: center;
+}
+
+.dc-auth p {
+  margin: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.75);
+}

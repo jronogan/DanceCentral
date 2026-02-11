@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import RoleDashboardSwitcher from "./RoleDashboardSwitcher";
 import { useAuth } from "../auth/useAuth.js";
 import ApplicantProfileModal from "./ApplicantProfileModal";
+import DcTopBar from "./DcTopBar.jsx";
 import {
   acceptApplication,
   createGig,
@@ -252,606 +253,608 @@ const EmployerDashboard = () => {
   ]);
 
   return (
-    <div style={{ padding: 16, display: "grid", gap: 16 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h2 style={{ margin: 0 }}>Employer Dashboard</h2>
-        </div>
+    <div className="dc-page">
+      <div className="dc-container">
+        <DcTopBar subtitle="Employer" />
 
-        <div style={{ fontSize: 12, opacity: 0.85 }}>
-          {employerQuery.isLoading ?? <p>Loading employer…</p>}
-          {employerQuery.isSuccess ? (
-            <p>Employer ID: {employerId}</p>
-          ) : (
-            <p>No employer profile linked to this user</p>
-          )}
-        </div>
-      </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <h2 style={{ margin: 0 }}>Employer Dashboard</h2>
+          </div>
 
-      {/* 1) Create gigs */}
-      <section
-        style={{
-          border: "1px solid var(--dc-border)",
-          borderRadius: 8,
-          padding: 12,
-        }}
-      >
-        <h3 style={{ marginTop: 0 }}>Create a gig</h3>
-
-        {createGigMutation.isError ? (
-          <div style={{ color: "var(--dc-danger)", marginBottom: 10 }}>
-            {String(
-              createGigMutation.error?.message || "Failed to create gig.",
+          <div style={{ fontSize: 12, opacity: 0.85 }}>
+            {employerQuery.isLoading ? <p>Loading employer…</p> : null}
+            {employerQuery.isSuccess ? (
+              <p>Employer ID: {employerId}</p>
+            ) : (
+              <p>No employer profile linked to this user</p>
             )}
           </div>
-        ) : null}
+        </div>
 
-        <div style={{ display: "grid", gap: 10 }}>
-          <label style={{ display: "grid", gap: 6 }}>
-            <span>Gig name</span>
-            <input
-              value={gigName}
-              onChange={(e) => setGigName(e.target.value)}
-              style={{
-                padding: 8,
-                borderRadius: 6,
-                border: "1px solid var(--dc-border)",
-              }}
-              placeholder="e.g. Chinese New Year performance"
-            />
-          </label>
+        {/* 1) Create gigs */}
+        <section className="dc-card">
+          <h3 style={{ marginTop: 0 }}>Create a gig</h3>
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span>Gig date</span>
-            <input
-              type="date"
-              value={gigDate}
-              onChange={(e) => setGigDate(e.target.value)}
-              style={{
-                padding: 8,
-                borderRadius: 6,
-                border: "1px solid var(--dc-border)",
-              }}
-            />
-          </label>
+          {createGigMutation.isError ? (
+            <div style={{ color: "var(--dc-danger)", marginBottom: 10 }}>
+              {String(
+                createGigMutation.error?.message || "Failed to create gig.",
+              )}
+            </div>
+          ) : null}
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span>Event type</span>
-            {eventTypesQuery.isLoading ? (
-              <div style={{ fontSize: 12, opacity: 0.8 }}>
-                Loading event types…
-              </div>
-            ) : eventTypesQuery.isError ? (
-              <div style={{ fontSize: 12, color: "var(--dc-danger)" }}>
-                Couldn’t load event types.
-              </div>
-            ) : (
-              <select
-                value={typeName}
-                onChange={(e) => setTypeName(e.target.value)}
+          <div style={{ display: "grid", gap: 10 }}>
+            <label style={{ display: "grid", gap: 6 }}>
+              <span>Gig name</span>
+              <input
+                value={gigName}
+                onChange={(e) => setGigName(e.target.value)}
                 style={{
                   padding: 8,
                   borderRadius: 6,
                   border: "1px solid var(--dc-border)",
                 }}
-              >
-                <option value="">Select event type…</option>
-                {eventTypesData.map((t) => {
-                  const value = t?.type_name ?? t?.name ?? String(t);
-                  return (
-                    <option key={value} value={value}>
-                      {formatString(value)}
-                    </option>
-                  );
-                })}
-              </select>
-            )}
-          </label>
+                placeholder="e.g. Chinese New Year performance"
+              />
+            </label>
 
-          <label style={{ display: "grid", gap: 6 }}>
-            <span>Gig details</span>
-            <textarea
-              value={gigDetails}
-              onChange={(e) => setGigDetails(e.target.value)}
-              rows={4}
-              style={{
-                padding: 8,
-                borderRadius: 6,
-                border: "1px solid var(--dc-border)",
-              }}
-              placeholder="Describe the gig, rehearsal needs, attire, etc."
-            />
-          </label>
-
-          <div style={{ display: "grid", gap: 10 }}>
-            <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-              <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <input
-                  type="checkbox"
-                  checked={needsDancer}
-                  onChange={(e) => setNeedsDancer(e.target.checked)}
-                />
-                <span>Need dancers</span>
-              </label>
-
-              <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <input
-                  type="checkbox"
-                  checked={needsChoreographer}
-                  onChange={(e) => setNeedsChoreographer(e.target.checked)}
-                />
-                <span>Need choreographers</span>
-              </label>
-            </div>
-
-            {needsDancer ? (
-              <div
+            <label style={{ display: "grid", gap: 6 }}>
+              <span>Gig date</span>
+              <input
+                type="date"
+                value={gigDate}
+                onChange={(e) => setGigDate(e.target.value)}
                 style={{
+                  padding: 8,
+                  borderRadius: 6,
                   border: "1px solid var(--dc-border)",
-                  borderRadius: 8,
-                  padding: 10,
                 }}
-              >
-                <strong>Dancer role requirements</strong>
-                <div
+              />
+            </label>
+
+            <label style={{ display: "grid", gap: 6 }}>
+              <span>Event type</span>
+              {eventTypesQuery.isLoading ? (
+                <div style={{ fontSize: 12, opacity: 0.8 }}>
+                  Loading event types…
+                </div>
+              ) : eventTypesQuery.isError ? (
+                <div style={{ fontSize: 12, color: "var(--dc-danger)" }}>
+                  Couldn’t load event types.
+                </div>
+              ) : (
+                <select
+                  value={typeName}
+                  onChange={(e) => setTypeName(e.target.value)}
                   style={{
-                    marginTop: 10,
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                    gap: 10,
+                    padding: 8,
+                    borderRadius: 6,
+                    border: "1px solid var(--dc-border)",
                   }}
                 >
-                  <label style={{ display: "grid", gap: 6 }}>
-                    <span>Needed count</span>
-                    <input
-                      type="number"
-                      min={1}
-                      value={dancer.needed_count}
-                      onChange={(e) =>
-                        setDancer((prev) => ({
-                          ...prev,
-                          needed_count: e.target.value,
-                        }))
-                      }
-                      style={{
-                        padding: 8,
-                        borderRadius: 6,
-                        border: "1px solid var(--dc-border)",
-                      }}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 6 }}>
-                    <span>Pay amount</span>
-                    <input
-                      type="number"
-                      min={0}
-                      value={dancer.pay_amount}
-                      onChange={(e) =>
-                        setDancer((prev) => ({
-                          ...prev,
-                          pay_amount: e.target.value,
-                        }))
-                      }
-                      style={{
-                        padding: 8,
-                        borderRadius: 6,
-                        border: "1px solid var(--dc-border)",
-                      }}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 6 }}>
-                    <span>Currency</span>
-                    <input
-                      value={dancer.pay_currency}
-                      onChange={(e) =>
-                        setDancer((prev) => ({
-                          ...prev,
-                          pay_currency: e.target.value,
-                        }))
-                      }
-                      style={{
-                        padding: 8,
-                        borderRadius: 6,
-                        border: "1px solid var(--dc-border)",
-                      }}
-                      placeholder="e.g. SGD"
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 6 }}>
-                    <span>Pay unit</span>
-                    <input
-                      value={dancer.pay_unit}
-                      onChange={(e) =>
-                        setDancer((prev) => ({
-                          ...prev,
-                          pay_unit: e.target.value,
-                        }))
-                      }
-                      style={{
-                        padding: 8,
-                        borderRadius: 6,
-                        border: "1px solid var(--dc-border)",
-                      }}
-                      placeholder="e.g. flat rate / per hour"
-                    />
-                  </label>
-                </div>
-              </div>
-            ) : null}
+                  <option value="">Select event type…</option>
+                  {eventTypesData.map((t) => {
+                    const value = t?.type_name ?? t?.name ?? String(t);
+                    return (
+                      <option key={value} value={value}>
+                        {formatString(value)}
+                      </option>
+                    );
+                  })}
+                </select>
+              )}
+            </label>
 
-            {needsChoreographer ? (
-              <div
+            <label style={{ display: "grid", gap: 6 }}>
+              <span>Gig details</span>
+              <textarea
+                value={gigDetails}
+                onChange={(e) => setGigDetails(e.target.value)}
+                rows={4}
                 style={{
+                  padding: 8,
+                  borderRadius: 6,
                   border: "1px solid var(--dc-border)",
-                  borderRadius: 8,
-                  padding: 10,
                 }}
-              >
-                <strong>Choreographer role requirements</strong>
-                <div
-                  style={{
-                    marginTop: 10,
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                    gap: 10,
-                  }}
+                placeholder="Describe the gig, rehearsal needs, attire, etc."
+              />
+            </label>
+
+            <div style={{ display: "grid", gap: 10 }}>
+              <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+                <label
+                  style={{ display: "flex", gap: 8, alignItems: "center" }}
                 >
-                  <label style={{ display: "grid", gap: 6 }}>
-                    <span>Needed count</span>
-                    <input
-                      type="number"
-                      min={1}
-                      value={choreographer.needed_count}
-                      onChange={(e) =>
-                        setChoreographer((prev) => ({
-                          ...prev,
-                          needed_count: e.target.value,
-                        }))
-                      }
-                      style={{
-                        padding: 8,
-                        borderRadius: 6,
-                        border: "1px solid var(--dc-border)",
-                      }}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 6 }}>
-                    <span>Pay amount</span>
-                    <input
-                      type="number"
-                      min={0}
-                      value={choreographer.pay_amount}
-                      onChange={(e) =>
-                        setChoreographer((prev) => ({
-                          ...prev,
-                          pay_amount: e.target.value,
-                        }))
-                      }
-                      style={{
-                        padding: 8,
-                        borderRadius: 6,
-                        border: "1px solid var(--dc-border)",
-                      }}
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 6 }}>
-                    <span>Currency</span>
-                    <input
-                      value={choreographer.pay_currency}
-                      onChange={(e) =>
-                        setChoreographer((prev) => ({
-                          ...prev,
-                          pay_currency: e.target.value,
-                        }))
-                      }
-                      style={{
-                        padding: 8,
-                        borderRadius: 6,
-                        border: "1px solid var(--dc-border)",
-                      }}
-                      placeholder="e.g. SGD"
-                    />
-                  </label>
-                  <label style={{ display: "grid", gap: 6 }}>
-                    <span>Pay unit</span>
-                    <input
-                      value={choreographer.pay_unit}
-                      onChange={(e) =>
-                        setChoreographer((prev) => ({
-                          ...prev,
-                          pay_unit: e.target.value,
-                        }))
-                      }
-                      style={{
-                        padding: 8,
-                        borderRadius: 6,
-                        border: "1px solid var(--dc-border)",
-                      }}
-                      placeholder="e.g. flat rate / per hour"
-                    />
-                  </label>
-                </div>
+                  <input
+                    type="checkbox"
+                    checked={needsDancer}
+                    onChange={(e) => setNeedsDancer(e.target.checked)}
+                  />
+                  <span>Need dancers</span>
+                </label>
+
+                <label
+                  style={{ display: "flex", gap: 8, alignItems: "center" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={needsChoreographer}
+                    onChange={(e) => setNeedsChoreographer(e.target.checked)}
+                  />
+                  <span>Need choreographers</span>
+                </label>
               </div>
-            ) : null}
-          </div>
 
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <button
-              type="button"
-              onClick={() => createGigMutation.mutate()}
-              disabled={!canSubmitGig || createGigMutation.isPending}
-              style={{ padding: "8px 12px" }}
-            >
-              {createGigMutation.isPending ? "Creating…" : "Create gig"}
-            </button>
-            <span style={{ fontSize: 12, opacity: 0.75 }}>
-              {needsDancer || needsChoreographer
-                ? "Roles will be added after the gig is created."
-                : "Select at least one role."}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* 2) View my posted gigs + 3) Manage applications */}
-      <section
-        style={{
-          border: "1px solid var(--dc-border)",
-          borderRadius: 8,
-          padding: 12,
-        }}
-      >
-        <h3 style={{ marginTop: 0 }}>My posted gigs</h3>
-
-        {postedGigsQuery.isLoading ? (
-          <div>Loading your gigs…</div>
-        ) : postedGigsQuery.isError ? (
-          <div>Couldn’t load your gigs.</div>
-        ) : postedGigs.length === 0 ? (
-          <div>You haven’t posted any gigs yet.</div>
-        ) : (
-          <ul
-            style={{
-              listStyle: "none",
-              paddingLeft: 0,
-              margin: 0,
-              display: "grid",
-              gap: 12,
-            }}
-          >
-            {postedGigs.map((g) => {
-              const applicants = applicantsByGig?.[g.gig_id] ?? [];
-              return (
-                <li
-                  key={g.gig_id}
+              {needsDancer ? (
+                <div
                   style={{
                     border: "1px solid var(--dc-border)",
                     borderRadius: 8,
-                    padding: 12,
+                    padding: 10,
                   }}
                 >
+                  <strong>Dancer role requirements</strong>
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
+                      marginTop: 10,
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                       gap: 10,
                     }}
                   >
-                    <div style={{ display: "grid", gap: 4 }}>
-                      <strong>{g.gig_name ?? `Gig #${g.gig_id}`}</strong>
-                      <div style={{ fontSize: 12, opacity: 0.8 }}>
-                        {g.type_name ? formatString(g.type_name) : ""}{" "}
-                        {g.gig_date
-                          ? `• ${new Date(g.gig_date).toLocaleDateString()}`
-                          : ""}
-                      </div>
-                    </div>
-
-                    <div
-                      style={{ display: "flex", gap: 8, alignItems: "center" }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => deleteGigMutation.mutate(g.gig_id)}
-                        disabled={deleteGigMutation.isPending}
-                        style={{ padding: "6px 10px" }}
-                      >
-                        {deleteGigMutation.isPending ? "Deleting…" : "Delete"}
-                      </button>
-                    </div>
-                  </div>
-
-                  {g.gig_details ? (
-                    <div style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>
-                      {g.gig_details}
-                    </div>
-                  ) : null}
-
-                  <div style={{ marginTop: 12 }}>
-                    <h4 style={{ margin: "0 0 8px 0" }}>Applications</h4>
-
-                    {applicantsByGigQuery.isLoading ? (
-                      <div>Loading applicants…</div>
-                    ) : applicantsByGigQuery.isError ? (
-                      <div style={{ color: "var(--dc-danger)" }}>
-                        {String(
-                          applicantsByGigQuery.error?.message ||
-                            "Couldn’t load applicants.",
-                        )}
-                      </div>
-                    ) : applicants.length === 0 ? (
-                      <div style={{ fontSize: 12, opacity: 0.8 }}>
-                        No applications yet.
-                      </div>
-                    ) : (
-                      <ul
+                    <label style={{ display: "grid", gap: 6 }}>
+                      <span>Needed count</span>
+                      <input
+                        type="number"
+                        min={1}
+                        value={dancer.needed_count}
+                        onChange={(e) =>
+                          setDancer((prev) => ({
+                            ...prev,
+                            needed_count: e.target.value,
+                          }))
+                        }
                         style={{
-                          listStyle: "none",
-                          paddingLeft: 0,
-                          margin: 0,
-                          display: "grid",
+                          padding: 8,
+                          borderRadius: 6,
+                          border: "1px solid var(--dc-border)",
+                        }}
+                      />
+                    </label>
+                    <label style={{ display: "grid", gap: 6 }}>
+                      <span>Pay amount</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={dancer.pay_amount}
+                        onChange={(e) =>
+                          setDancer((prev) => ({
+                            ...prev,
+                            pay_amount: e.target.value,
+                          }))
+                        }
+                        style={{
+                          padding: 8,
+                          borderRadius: 6,
+                          border: "1px solid var(--dc-border)",
+                        }}
+                      />
+                    </label>
+                    <label style={{ display: "grid", gap: 6 }}>
+                      <span>Currency</span>
+                      <input
+                        value={dancer.pay_currency}
+                        onChange={(e) =>
+                          setDancer((prev) => ({
+                            ...prev,
+                            pay_currency: e.target.value,
+                          }))
+                        }
+                        style={{
+                          padding: 8,
+                          borderRadius: 6,
+                          border: "1px solid var(--dc-border)",
+                        }}
+                        placeholder="e.g. SGD"
+                      />
+                    </label>
+                    <label style={{ display: "grid", gap: 6 }}>
+                      <span>Pay unit</span>
+                      <input
+                        value={dancer.pay_unit}
+                        onChange={(e) =>
+                          setDancer((prev) => ({
+                            ...prev,
+                            pay_unit: e.target.value,
+                          }))
+                        }
+                        style={{
+                          padding: 8,
+                          borderRadius: 6,
+                          border: "1px solid var(--dc-border)",
+                        }}
+                        placeholder="e.g. flat rate / per hour"
+                      />
+                    </label>
+                  </div>
+                </div>
+              ) : null}
+
+              {needsChoreographer ? (
+                <div
+                  style={{
+                    border: "1px solid var(--dc-border)",
+                    borderRadius: 8,
+                    padding: 10,
+                  }}
+                >
+                  <strong>Choreographer role requirements</strong>
+                  <div
+                    style={{
+                      marginTop: 10,
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                      gap: 10,
+                    }}
+                  >
+                    <label style={{ display: "grid", gap: 6 }}>
+                      <span>Needed count</span>
+                      <input
+                        type="number"
+                        min={1}
+                        value={choreographer.needed_count}
+                        onChange={(e) =>
+                          setChoreographer((prev) => ({
+                            ...prev,
+                            needed_count: e.target.value,
+                          }))
+                        }
+                        style={{
+                          padding: 8,
+                          borderRadius: 6,
+                          border: "1px solid var(--dc-border)",
+                        }}
+                      />
+                    </label>
+                    <label style={{ display: "grid", gap: 6 }}>
+                      <span>Pay amount</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={choreographer.pay_amount}
+                        onChange={(e) =>
+                          setChoreographer((prev) => ({
+                            ...prev,
+                            pay_amount: e.target.value,
+                          }))
+                        }
+                        style={{
+                          padding: 8,
+                          borderRadius: 6,
+                          border: "1px solid var(--dc-border)",
+                        }}
+                      />
+                    </label>
+                    <label style={{ display: "grid", gap: 6 }}>
+                      <span>Currency</span>
+                      <input
+                        value={choreographer.pay_currency}
+                        onChange={(e) =>
+                          setChoreographer((prev) => ({
+                            ...prev,
+                            pay_currency: e.target.value,
+                          }))
+                        }
+                        style={{
+                          padding: 8,
+                          borderRadius: 6,
+                          border: "1px solid var(--dc-border)",
+                        }}
+                        placeholder="e.g. SGD"
+                      />
+                    </label>
+                    <label style={{ display: "grid", gap: 6 }}>
+                      <span>Pay unit</span>
+                      <input
+                        value={choreographer.pay_unit}
+                        onChange={(e) =>
+                          setChoreographer((prev) => ({
+                            ...prev,
+                            pay_unit: e.target.value,
+                          }))
+                        }
+                        style={{
+                          padding: 8,
+                          borderRadius: 6,
+                          border: "1px solid var(--dc-border)",
+                        }}
+                        placeholder="e.g. flat rate / per hour"
+                      />
+                    </label>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <button
+                type="button"
+                onClick={() => createGigMutation.mutate()}
+                disabled={!canSubmitGig || createGigMutation.isPending}
+                style={{ padding: "8px 12px" }}
+              >
+                {createGigMutation.isPending ? "Creating…" : "Create gig"}
+              </button>
+              <span style={{ fontSize: 12, opacity: 0.75 }}>
+                {needsDancer || needsChoreographer
+                  ? "Roles will be added after the gig is created."
+                  : "Select at least one role."}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* 2) View my posted gigs + 3) Manage applications */}
+        <section className="dc-card">
+          <h3 style={{ marginTop: 0 }}>My posted gigs</h3>
+
+          {postedGigsQuery.isLoading ? (
+            <div>Loading your gigs…</div>
+          ) : postedGigsQuery.isError ? (
+            <div>Couldn’t load your gigs.</div>
+          ) : postedGigs.length === 0 ? (
+            <div>You haven’t posted any gigs yet.</div>
+          ) : (
+            <ul
+              style={{
+                listStyle: "none",
+                paddingLeft: 0,
+                margin: 0,
+                display: "grid",
+                gap: 12,
+              }}
+            >
+              {postedGigs.map((g) => {
+                const applicants = applicantsByGig?.[g.gig_id] ?? [];
+                return (
+                  <li
+                    key={g.gig_id}
+                    style={{
+                      border: "1px solid var(--dc-border)",
+                      borderRadius: 8,
+                      padding: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 10,
+                      }}
+                    >
+                      <div style={{ display: "grid", gap: 4 }}>
+                        <strong>{g.gig_name ?? `Gig #${g.gig_id}`}</strong>
+                        <div style={{ fontSize: 12, opacity: 0.8 }}>
+                          {g.type_name ? formatString(g.type_name) : ""}{" "}
+                          {g.gig_date
+                            ? `• ${new Date(g.gig_date).toLocaleDateString()}`
+                            : ""}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
                           gap: 8,
+                          alignItems: "center",
                         }}
                       >
-                        <li style={{ fontSize: 12, opacity: 0.75 }}>
-                          Total: {applicants.length}
-                        </li>
-                        {applicants.map((a) => (
-                          <li
-                            key={a.application_id ?? `${a.user_id}-${a.gig_id}`}
-                            style={{
-                              border: "1px solid var(--dc-border)",
-                              borderRadius: 8,
-                              padding: 10,
-                              display: "grid",
-                              gap: 8,
-                            }}
-                          >
-                            <div
+                        <button
+                          type="button"
+                          onClick={() => deleteGigMutation.mutate(g.gig_id)}
+                          disabled={deleteGigMutation.isPending}
+                          style={{ padding: "6px 10px" }}
+                        >
+                          {deleteGigMutation.isPending ? "Deleting…" : "Delete"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {g.gig_details ? (
+                      <div style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>
+                        {g.gig_details}
+                      </div>
+                    ) : null}
+
+                    <div style={{ marginTop: 12 }}>
+                      <h4 style={{ margin: "0 0 8px 0" }}>Applications</h4>
+
+                      {applicantsByGigQuery.isLoading ? (
+                        <div>Loading applicants…</div>
+                      ) : applicantsByGigQuery.isError ? (
+                        <div style={{ color: "var(--dc-danger)" }}>
+                          {String(
+                            applicantsByGigQuery.error?.message ||
+                              "Couldn’t load applicants.",
+                          )}
+                        </div>
+                      ) : applicants.length === 0 ? (
+                        <div style={{ fontSize: 12, opacity: 0.8 }}>
+                          No applications yet.
+                        </div>
+                      ) : (
+                        <ul
+                          style={{
+                            listStyle: "none",
+                            paddingLeft: 0,
+                            margin: 0,
+                            display: "grid",
+                            gap: 8,
+                          }}
+                        >
+                          <li style={{ fontSize: 12, opacity: 0.75 }}>
+                            Total: {applicants.length}
+                          </li>
+                          {applicants.map((a) => (
+                            <li
+                              key={
+                                a.application_id ?? `${a.user_id}-${a.gig_id}`
+                              }
                               style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                gap: 10,
+                                border: "1px solid var(--dc-border)",
+                                borderRadius: 8,
+                                padding: 10,
+                                display: "grid",
+                                gap: 8,
                               }}
                             >
                               <div
                                 style={{
                                   display: "flex",
+                                  justifyContent: "space-between",
                                   gap: 10,
-                                  alignItems: "center",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: 10,
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setSelectedApplicant({
+                                        userId: a.user_id,
+                                        name:
+                                          a.applicant_name ||
+                                          a.name ||
+                                          a.applicant_email ||
+                                          `Applicant #${a.user_id}`,
+                                      })
+                                    }
+                                    style={{
+                                      padding: 0,
+                                      border: 0,
+                                      background: "transparent",
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                      textAlign: "left",
+                                      color: "var(--dc-text-muted)",
+                                      textDecoration: "underline",
+                                      textUnderlineOffset: 3,
+                                    }}
+                                    title="View applicant profile"
+                                  >
+                                    {a.applicant_name ||
+                                      a.name ||
+                                      a.applicant_email ||
+                                      `Applicant #${a.user_id}`}
+                                  </button>
+                                  <span style={statusPillStyle(a.status)}>
+                                    {a.status ?? "applied"}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: 12, opacity: 0.8 }}>
+                                  {a.created_at || a.applied_at
+                                    ? new Date(
+                                        a.created_at || a.applied_at,
+                                      ).toLocaleString()
+                                    : ""}
+                                </div>
+                              </div>
+
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: 8,
+                                  flexWrap: "wrap",
                                 }}
                               >
                                 <button
                                   type="button"
                                   onClick={() =>
-                                    setSelectedApplicant({
-                                      userId: a.user_id,
-                                      name:
-                                        a.applicant_name ||
-                                        a.name ||
-                                        a.applicant_email ||
-                                        `Applicant #${a.user_id}`,
+                                    updateStatusMutation.mutate({
+                                      application_id: a.application_id,
+                                      action: "shortlist",
                                     })
                                   }
-                                  style={{
-                                    padding: 0,
-                                    border: 0,
-                                    background: "transparent",
-                                    fontWeight: 700,
-                                    cursor: "pointer",
-                                    textAlign: "left",
-                                    color: "var(--dc-text-muted)",
-                                    textDecoration: "underline",
-                                    textUnderlineOffset: 3,
-                                  }}
-                                  title="View applicant profile"
+                                  disabled={updateStatusMutation.isPending}
+                                  style={{ padding: "6px 10px" }}
                                 >
-                                  {a.applicant_name ||
-                                    a.name ||
-                                    a.applicant_email ||
-                                    `Applicant #${a.user_id}`}
+                                  Shortlist
                                 </button>
-                                <span style={statusPillStyle(a.status)}>
-                                  {a.status ?? "applied"}
-                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateStatusMutation.mutate({
+                                      application_id: a.application_id,
+                                      action: "accept",
+                                    })
+                                  }
+                                  disabled={updateStatusMutation.isPending}
+                                  style={{ padding: "6px 10px" }}
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateStatusMutation.mutate({
+                                      application_id: a.application_id,
+                                      action: "reject",
+                                    })
+                                  }
+                                  disabled={updateStatusMutation.isPending}
+                                  style={{ padding: "6px 10px" }}
+                                >
+                                  Reject
+                                </button>
                               </div>
-                              <div style={{ fontSize: 12, opacity: 0.8 }}>
-                                {a.created_at || a.applied_at
-                                  ? new Date(
-                                      a.created_at || a.applied_at,
-                                    ).toLocaleString()
-                                  : ""}
-                              </div>
-                            </div>
 
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: 8,
-                                flexWrap: "wrap",
-                              }}
-                            >
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateStatusMutation.mutate({
-                                    application_id: a.application_id,
-                                    action: "shortlist",
-                                  })
-                                }
-                                disabled={updateStatusMutation.isPending}
-                                style={{ padding: "6px 10px" }}
-                              >
-                                Shortlist
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateStatusMutation.mutate({
-                                    application_id: a.application_id,
-                                    action: "accept",
-                                  })
-                                }
-                                disabled={updateStatusMutation.isPending}
-                                style={{ padding: "6px 10px" }}
-                              >
-                                Accept
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateStatusMutation.mutate({
-                                    application_id: a.application_id,
-                                    action: "reject",
-                                  })
-                                }
-                                disabled={updateStatusMutation.isPending}
-                                style={{ padding: "6px 10px" }}
-                              >
-                                Reject
-                              </button>
-                            </div>
+                              {updateStatusMutation.isError ? (
+                                <div
+                                  style={{
+                                    color: "var(--dc-danger)",
+                                    fontSize: 12,
+                                  }}
+                                >
+                                  {String(
+                                    updateStatusMutation.error?.message ||
+                                      "Failed to update status.",
+                                  )}
+                                </div>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
 
-                            {updateStatusMutation.isError ? (
-                              <div
-                                style={{
-                                  color: "var(--dc-danger)",
-                                  fontSize: 12,
-                                }}
-                              >
-                                {String(
-                                  updateStatusMutation.error?.message ||
-                                    "Failed to update status.",
-                                )}
-                              </div>
-                            ) : null}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-
-      {selectedApplicant ? (
-        <ApplicantProfileModal
-          token={token}
-          userId={selectedApplicant.userId}
-          applicantName={selectedApplicant.name}
-          onClose={() => setSelectedApplicant(null)}
-        />
-      ) : null}
+        {selectedApplicant ? (
+          <ApplicantProfileModal
+            token={token}
+            userId={selectedApplicant.userId}
+            applicantName={selectedApplicant.name}
+            onClose={() => setSelectedApplicant(null)}
+          />
+        ) : null}
+      </div>
     </div>
   );
 };

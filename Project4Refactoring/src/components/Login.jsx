@@ -53,46 +53,54 @@ const Login = () => {
   const disabled = loading || submitting;
 
   return (
-    <div style={{ maxWidth: 520, margin: "24px auto" }}>
-      <h2>Login</h2>
+    <div className="dc-page">
+      <div className="dc-auth">
+        <h2>DanceCentral</h2>
+        <p>Connect, Create, Collaborate</p>
 
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Email</span>
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            autoComplete="email"
-            required
-          />
-        </label>
+        <form
+          onSubmit={onSubmit}
+          style={{ display: "grid", gap: 12, marginTop: 18 }}
+        >
+          <label style={{ display: "grid", gap: 6 }}>
+            <span>Email</span>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              autoComplete="email"
+              required
+              placeholder="you@example.com"
+            />
+          </label>
 
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Password</span>
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            autoComplete="current-password"
-            required
-          />
-        </label>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span>Password</span>
+            <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              autoComplete="current-password"
+              required
+              placeholder="••••••••"
+            />
+          </label>
 
-        {error ? (
-          <div style={{ color: "var(--dc-danger)" }} role="alert">
-            {error}
-          </div>
-        ) : null}
+          {error ? (
+            <div style={{ color: "var(--dc-danger)" }} role="alert">
+              {error}
+            </div>
+          ) : null}
 
-        <button type="submit" disabled={disabled}>
-          {submitting ? "Signing in…" : "Sign in"}
-        </button>
-      </form>
+          <button type="submit" disabled={disabled} style={{ marginTop: 6 }}>
+            {submitting ? "Signing in…" : "Sign In"}
+          </button>
+        </form>
 
-      <p style={{ marginTop: 12 }}>
-        Need an account? <Link to="/register">Register</Link>
-      </p>
+        <p style={{ marginTop: 14 }}>
+          Don’t have an account? <Link to="/register">Sign up</Link>
+        </p>
+      </div>
     </div>
   );
 };
