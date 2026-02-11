@@ -6,7 +6,7 @@ import Login from "./components/Login";
 import ChoreographerDashboard from "./components/ChoreographerDashboard";
 import EmployerDashboard from "./components/EmployerDashboard";
 import UserProfile from "./components/UserProfile";
-import { useAuth } from "./auth/AuthContext.jsx";
+import { useAuth } from "./auth/useAuth.js";
 import RoleDashboardSwitcher from "./components/RoleDashboardSwitcher.jsx";
 
 function roleToPath(roleName) {

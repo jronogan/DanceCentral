@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import RoleDashboardSwitcher from "./RoleDashboardSwitcher";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "../auth/useAuth.js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createApplication,
@@ -9,6 +9,7 @@ import {
   getGigRoles,
   getSkillsForUser,
   getUserApplications,
+  formatString,
 } from "../library/dashboardApi";
 
 const ChoreographerDashboard = () => {
@@ -112,7 +113,11 @@ const ChoreographerDashboard = () => {
       </div>
 
       <section
-        style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}
+        style={{
+          border: "1px solid var(--dc-border)",
+          borderRadius: 8,
+          padding: 12,
+        }}
       >
         <h3 style={{ marginTop: 0 }}>My Skills</h3>
         {skillsQuery.isLoading ? (
@@ -125,7 +130,7 @@ const ChoreographerDashboard = () => {
           <ul style={{ margin: 0, paddingLeft: 18 }}>
             {skills.map((s) => (
               <li key={s.skill_id ?? s.skill_name ?? JSON.stringify(s)}>
-                {s.skill_name ?? s.name ?? String(s)}
+                {formatString(s)}
               </li>
             ))}
           </ul>
@@ -133,7 +138,11 @@ const ChoreographerDashboard = () => {
       </section>
 
       <section
-        style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}
+        style={{
+          border: "1px solid var(--dc-border)",
+          borderRadius: 8,
+          padding: 12,
+        }}
       >
         <h3 style={{ marginTop: 0 }}>Find choreographer gigs</h3>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -145,7 +154,7 @@ const ChoreographerDashboard = () => {
               flex: 1,
               padding: 8,
               borderRadius: 6,
-              border: "1px solid #d1d5db",
+              border: "1px solid var(--dc-border)",
             }}
           />
           <button
@@ -184,7 +193,7 @@ const ChoreographerDashboard = () => {
               <li
                 key={g.gig_id}
                 style={{
-                  border: "1px solid #e5e7eb",
+                  border: "1px solid var(--dc-border)",
                   borderRadius: 8,
                   padding: 12,
                   display: "grid",
@@ -206,7 +215,7 @@ const ChoreographerDashboard = () => {
                   </span>
                 </div>
                 <div style={{ fontSize: 12, opacity: 0.8 }}>
-                  {g.type_name ?? ""}
+                  {g.type_name ? formatString(g.type_name) : ""}
                 </div>
                 <div style={{ whiteSpace: "pre-wrap" }}>
                   {g.gig_details ?? ""}
@@ -228,7 +237,11 @@ const ChoreographerDashboard = () => {
       </section>
 
       <section
-        style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}
+        style={{
+          border: "1px solid var(--dc-border)",
+          borderRadius: 8,
+          padding: 12,
+        }}
       >
         <h3 style={{ marginTop: 0 }}>My applied gigs</h3>
 
@@ -252,7 +265,7 @@ const ChoreographerDashboard = () => {
               <li
                 key={a.application_id ?? `${a.user_id}-${a.gig_id}`}
                 style={{
-                  border: "1px solid #e5e7eb",
+                  border: "1px solid var(--dc-border)",
                   borderRadius: 8,
                   padding: 12,
                   display: "grid",

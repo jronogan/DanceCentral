@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext.jsx";
+import { useAuth } from "../auth/useAuth.js";
 import {
+  formatString,
   getMemberTypes,
   getRoles,
   getSkills,
@@ -344,11 +345,13 @@ const Register = () => {
                   </label>
                 ))}
               </div>
-              <p style={{ marginTop: 8, color: "#555" }}>
+              <p style={{ marginTop: 8, color: "var(--dc-text-muted)" }}>
                 Choose one or more: dancer, choreographer, employer.
               </p>
               {optionsLoading ? (
-                <p style={{ marginTop: 8, color: "#555" }}>Loading roles…</p>
+                <p style={{ marginTop: 8, color: "var(--dc-text-muted)" }}>
+                  Loading roles…
+                </p>
               ) : null}
             </fieldset>
 
@@ -371,7 +374,7 @@ const Register = () => {
         return (
           <>
             <h3>Company details</h3>
-            <p style={{ color: "#555" }}>
+            <p style={{ color: "var(--dc-text-muted)" }}>
               Only required if you selected the employer role.
             </p>
 
@@ -486,12 +489,12 @@ const Register = () => {
         return (
           <>
             <h3>Skills</h3>
-            <p style={{ color: "#555" }}>
+            <p style={{ color: "var(--dc-text-muted)" }}>
               Choose the skills you have (based on your backend skills list).
             </p>
 
             {!optionsLoading && skillOptions.length === 0 ? (
-              <p style={{ color: "crimson" }} role="alert">
+              <p style={{ color: "var(--dc-danger)" }} role="alert">
                 Could not load skills from the server.
               </p>
             ) : null}
@@ -511,7 +514,7 @@ const Register = () => {
                     gap: 8,
                     alignItems: "center",
                     padding: 8,
-                    border: "1px solid #ddd",
+                    border: "1px solid var(--dc-border)",
                     borderRadius: 8,
                   }}
                 >
@@ -520,7 +523,7 @@ const Register = () => {
                     checked={skills.has(s)}
                     onChange={() => toggleSkill(s)}
                   />
-                  <span>{s}</span>
+                  <span>{formatString(s)}</span>
                 </label>
               ))}
             </div>
@@ -575,7 +578,8 @@ const Register = () => {
               ) : null}
               {wantsSkills ? (
                 <div>
-                  <strong>Skills:</strong> {selectedSkills.join(", ")}
+                  <strong>Skills:</strong>{" "}
+                  {selectedSkills.map((s) => formatString(s)).join(", ")}
                 </div>
               ) : null}
             </div>
@@ -628,7 +632,7 @@ const Register = () => {
         {renderStep()}
 
         {error ? (
-          <div style={{ color: "crimson" }} role="alert">
+          <div style={{ color: "var(--dc-danger)" }} role="alert">
             {error}
           </div>
         ) : null}

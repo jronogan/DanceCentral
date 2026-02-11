@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import RoleDashboardSwitcher from "./RoleDashboardSwitcher";
-import { useAuth } from "../auth/AuthContext.jsx";
+import { useAuth } from "../auth/useAuth.js";
 import ApplicantProfileModal from "./ApplicantProfileModal";
 import {
   acceptApplication,
@@ -12,6 +12,7 @@ import {
   getEmployerFromUser,
   getEventTypes,
   getPostedGigs,
+  formatString,
   rejectApplication,
   shortlistApplication,
 } from "../library/dashboardApi";
@@ -19,7 +20,6 @@ import {
 const EmployerDashboard = () => {
   const { token, user } = useAuth();
   const userId = user?.user_id ?? null;
-  const memberRole = user?.member_role ?? null;
   const queryClient = useQueryClient();
 
   const [selectedApplicant, setSelectedApplicant] = useState(null);
@@ -221,13 +221,16 @@ const EmployerDashboard = () => {
       fontSize: 12,
       padding: "2px 8px",
       borderRadius: 999,
-      border: "1px solid #e5e7eb",
+      border: "1px solid var(--dc-border)",
       display: "inline-block",
     };
-    if (s.includes("accept")) return { ...base, background: "#dcfce7" };
-    if (s.includes("reject")) return { ...base, background: "#fee2e2" };
-    if (s.includes("short")) return { ...base, background: "#fef9c3" };
-    return { ...base, background: "#f3f4f6" };
+    if (s.includes("accept"))
+      return { ...base, background: "rgba(16, 185, 129, 0.25)" };
+    if (s.includes("reject"))
+      return { ...base, background: "rgba(239, 68, 68, 0.25)" };
+    if (s.includes("short"))
+      return { ...base, background: "rgba(245, 158, 11, 0.25)" };
+    return { ...base, background: "var(--dc-surface)" };
   };
 
   const canSubmitGig = useMemo(() => {
@@ -274,12 +277,16 @@ const EmployerDashboard = () => {
 
       {/* 1) Create gigs */}
       <section
-        style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}
+        style={{
+          border: "1px solid var(--dc-border)",
+          borderRadius: 8,
+          padding: 12,
+        }}
       >
         <h3 style={{ marginTop: 0 }}>Create a gig</h3>
 
         {createGigMutation.isError ? (
-          <div style={{ color: "#b91c1c", marginBottom: 10 }}>
+          <div style={{ color: "var(--dc-danger)", marginBottom: 10 }}>
             {String(
               createGigMutation.error?.message || "Failed to create gig.",
             )}
@@ -295,7 +302,7 @@ const EmployerDashboard = () => {
               style={{
                 padding: 8,
                 borderRadius: 6,
-                border: "1px solid #d1d5db",
+                border: "1px solid var(--dc-border)",
               }}
               placeholder="e.g. Chinese New Year performance"
             />
@@ -310,7 +317,7 @@ const EmployerDashboard = () => {
               style={{
                 padding: 8,
                 borderRadius: 6,
-                border: "1px solid #d1d5db",
+                border: "1px solid var(--dc-border)",
               }}
             />
           </label>
@@ -322,7 +329,7 @@ const EmployerDashboard = () => {
                 Loading event types…
               </div>
             ) : eventTypesQuery.isError ? (
-              <div style={{ fontSize: 12, color: "#b91c1c" }}>
+              <div style={{ fontSize: 12, color: "var(--dc-danger)" }}>
                 Couldn’t load event types.
               </div>
             ) : (
@@ -332,7 +339,7 @@ const EmployerDashboard = () => {
                 style={{
                   padding: 8,
                   borderRadius: 6,
-                  border: "1px solid #d1d5db",
+                  border: "1px solid var(--dc-border)",
                 }}
               >
                 <option value="">Select event type…</option>
@@ -340,7 +347,7 @@ const EmployerDashboard = () => {
                   const value = t?.type_name ?? t?.name ?? String(t);
                   return (
                     <option key={value} value={value}>
-                      {value}
+                      {formatString(value)}
                     </option>
                   );
                 })}
@@ -357,7 +364,7 @@ const EmployerDashboard = () => {
               style={{
                 padding: 8,
                 borderRadius: 6,
-                border: "1px solid #d1d5db",
+                border: "1px solid var(--dc-border)",
               }}
               placeholder="Describe the gig, rehearsal needs, attire, etc."
             />
@@ -387,7 +394,7 @@ const EmployerDashboard = () => {
             {needsDancer ? (
               <div
                 style={{
-                  border: "1px solid #e5e7eb",
+                  border: "1px solid var(--dc-border)",
                   borderRadius: 8,
                   padding: 10,
                 }}
@@ -416,7 +423,7 @@ const EmployerDashboard = () => {
                       style={{
                         padding: 8,
                         borderRadius: 6,
-                        border: "1px solid #d1d5db",
+                        border: "1px solid var(--dc-border)",
                       }}
                     />
                   </label>
@@ -435,7 +442,7 @@ const EmployerDashboard = () => {
                       style={{
                         padding: 8,
                         borderRadius: 6,
-                        border: "1px solid #d1d5db",
+                        border: "1px solid var(--dc-border)",
                       }}
                     />
                   </label>
@@ -452,7 +459,7 @@ const EmployerDashboard = () => {
                       style={{
                         padding: 8,
                         borderRadius: 6,
-                        border: "1px solid #d1d5db",
+                        border: "1px solid var(--dc-border)",
                       }}
                       placeholder="e.g. SGD"
                     />
@@ -470,7 +477,7 @@ const EmployerDashboard = () => {
                       style={{
                         padding: 8,
                         borderRadius: 6,
-                        border: "1px solid #d1d5db",
+                        border: "1px solid var(--dc-border)",
                       }}
                       placeholder="e.g. flat rate / per hour"
                     />
@@ -482,7 +489,7 @@ const EmployerDashboard = () => {
             {needsChoreographer ? (
               <div
                 style={{
-                  border: "1px solid #e5e7eb",
+                  border: "1px solid var(--dc-border)",
                   borderRadius: 8,
                   padding: 10,
                 }}
@@ -511,7 +518,7 @@ const EmployerDashboard = () => {
                       style={{
                         padding: 8,
                         borderRadius: 6,
-                        border: "1px solid #d1d5db",
+                        border: "1px solid var(--dc-border)",
                       }}
                     />
                   </label>
@@ -530,7 +537,7 @@ const EmployerDashboard = () => {
                       style={{
                         padding: 8,
                         borderRadius: 6,
-                        border: "1px solid #d1d5db",
+                        border: "1px solid var(--dc-border)",
                       }}
                     />
                   </label>
@@ -547,7 +554,7 @@ const EmployerDashboard = () => {
                       style={{
                         padding: 8,
                         borderRadius: 6,
-                        border: "1px solid #d1d5db",
+                        border: "1px solid var(--dc-border)",
                       }}
                       placeholder="e.g. SGD"
                     />
@@ -565,7 +572,7 @@ const EmployerDashboard = () => {
                       style={{
                         padding: 8,
                         borderRadius: 6,
-                        border: "1px solid #d1d5db",
+                        border: "1px solid var(--dc-border)",
                       }}
                       placeholder="e.g. flat rate / per hour"
                     />
@@ -595,7 +602,11 @@ const EmployerDashboard = () => {
 
       {/* 2) View my posted gigs + 3) Manage applications */}
       <section
-        style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}
+        style={{
+          border: "1px solid var(--dc-border)",
+          borderRadius: 8,
+          padding: 12,
+        }}
       >
         <h3 style={{ marginTop: 0 }}>My posted gigs</h3>
 
@@ -621,7 +632,7 @@ const EmployerDashboard = () => {
                 <li
                   key={g.gig_id}
                   style={{
-                    border: "1px solid #e5e7eb",
+                    border: "1px solid var(--dc-border)",
                     borderRadius: 8,
                     padding: 12,
                   }}
@@ -636,7 +647,7 @@ const EmployerDashboard = () => {
                     <div style={{ display: "grid", gap: 4 }}>
                       <strong>{g.gig_name ?? `Gig #${g.gig_id}`}</strong>
                       <div style={{ fontSize: 12, opacity: 0.8 }}>
-                        {g.type_name ?? ""}{" "}
+                        {g.type_name ? formatString(g.type_name) : ""}{" "}
                         {g.gig_date
                           ? `• ${new Date(g.gig_date).toLocaleDateString()}`
                           : ""}
@@ -669,7 +680,7 @@ const EmployerDashboard = () => {
                     {applicantsByGigQuery.isLoading ? (
                       <div>Loading applicants…</div>
                     ) : applicantsByGigQuery.isError ? (
-                      <div style={{ color: "#b91c1c" }}>
+                      <div style={{ color: "var(--dc-danger)" }}>
                         {String(
                           applicantsByGigQuery.error?.message ||
                             "Couldn’t load applicants.",
@@ -696,7 +707,7 @@ const EmployerDashboard = () => {
                           <li
                             key={a.application_id ?? `${a.user_id}-${a.gig_id}`}
                             style={{
-                              border: "1px solid #e5e7eb",
+                              border: "1px solid var(--dc-border)",
                               borderRadius: 8,
                               padding: 10,
                               display: "grid",
@@ -736,7 +747,7 @@ const EmployerDashboard = () => {
                                     fontWeight: 700,
                                     cursor: "pointer",
                                     textAlign: "left",
-                                    color: "#111827",
+                                    color: "var(--dc-text-muted)",
                                     textDecoration: "underline",
                                     textUnderlineOffset: 3,
                                   }}
@@ -809,7 +820,12 @@ const EmployerDashboard = () => {
                             </div>
 
                             {updateStatusMutation.isError ? (
-                              <div style={{ color: "#b91c1c", fontSize: 12 }}>
+                              <div
+                                style={{
+                                  color: "var(--dc-danger)",
+                                  fontSize: 12,
+                                }}
+                              >
                                 {String(
                                   updateStatusMutation.error?.message ||
                                     "Failed to update status.",

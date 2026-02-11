@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getUserPublicProfile } from "../library/dashboardApi";
+import { formatString, getUserPublicProfile } from "../library/dashboardApi";
 
 export default function ApplicantProfileModal({
   token,
@@ -39,7 +39,7 @@ export default function ApplicantProfileModal({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.45)",
+        background: "rgba(0,0,0,0.60)",
         display: "grid",
         placeItems: "center",
         padding: 16,
@@ -49,9 +49,9 @@ export default function ApplicantProfileModal({
       <div
         style={{
           width: "min(820px, 100%)",
-          background: "white",
+          background: "var(--dc-bg)",
           borderRadius: 12,
-          border: "1px solid #e5e7eb",
+          border: "1px solid var(--dc-border)",
           boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
           padding: 14,
           display: "grid",
@@ -72,7 +72,7 @@ export default function ApplicantProfileModal({
         {profileQuery.isLoading ? (
           <div>Loading profile…</div>
         ) : profileQuery.isError ? (
-          <div style={{ color: "crimson" }}>
+          <div style={{ color: "var(--dc-danger)" }}>
             {String(profileQuery.error?.message || "Failed to load profile")}
           </div>
         ) : !p ? (
@@ -97,7 +97,7 @@ export default function ApplicantProfileModal({
                       height: 96,
                       borderRadius: 12,
                       objectFit: "cover",
-                      border: "1px solid #e5e7eb",
+                      border: "1px solid var(--dc-border)",
                     }}
                   />
                 ) : (
@@ -106,7 +106,7 @@ export default function ApplicantProfileModal({
                       width: 96,
                       height: 96,
                       borderRadius: 12,
-                      border: "1px dashed #d1d5db",
+                      border: "1px dashed var(--dc-border-strong)",
                       display: "grid",
                       placeItems: "center",
                       opacity: 0.7,
@@ -139,7 +139,7 @@ export default function ApplicantProfileModal({
                         Roles:
                       </span>{" "}
                       {p.roles
-                        .map((r) => r?.role_name || r)
+                        .map((r) => formatString(r?.role_name || r))
                         .filter(Boolean)
                         .join(", ") || "—"}
                     </div>
@@ -151,7 +151,7 @@ export default function ApplicantProfileModal({
                         Skills:
                       </span>{" "}
                       {p.skills
-                        .map((s) => s?.skill_name || s)
+                        .map((s) => formatString(s?.skill_name || s))
                         .filter(Boolean)
                         .join(", ") || "—"}
                     </div>
@@ -160,7 +160,9 @@ export default function ApplicantProfileModal({
               </div>
             </div>
 
-            <hr style={{ border: 0, borderTop: "1px solid #e5e7eb" }} />
+            <hr
+              style={{ border: 0, borderTop: "1px solid var(--dc-border)" }}
+            />
 
             <div style={{ display: "grid", gap: 10 }}>
               <div style={{ fontWeight: 700 }}>Resume</div>

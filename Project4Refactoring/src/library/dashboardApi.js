@@ -512,3 +512,11 @@ export async function getApplicationStatus({ token }) {
   });
   return data;
 }
+
+// String formatting
+export const formatString = (str) => {
+  const stringArray = str.trim().toLowerCase().split("_");
+  return stringArray
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};

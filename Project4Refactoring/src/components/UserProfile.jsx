@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "../auth/AuthContext.jsx";
+import { useAuth } from "../auth/useAuth.js";
 import {
   assignUserRole,
   assignUserSkill,
@@ -20,6 +20,7 @@ import {
   signCloudinaryUpload,
   updateEmployerMember,
   updateUser,
+  formatString,
 } from "../library/dashboardApi.js";
 
 function pad2(value) {
@@ -57,7 +58,7 @@ function toISODateInputValue(value) {
 }
 
 const chipStyle = {
-  border: "1px solid #e5e7eb",
+  border: "1px solid var(--dc-border)",
   borderRadius: 999,
   padding: "4px 10px",
   display: "flex",
@@ -70,10 +71,9 @@ export default function UserProfile() {
   const queryClient = useQueryClient();
   const { token, user, isAuthenticated, loading, activeRole } = useAuth();
 
-  if (!loading && !isAuthenticated) return <Navigate to="/login" replace />;
+  const shouldRedirectToLogin = !loading && !isAuthenticated;
 
   const userId = user?.user_id ?? null;
-  const userMemberRole = user?.member_role ?? null;
   const displayName = user?.user_name ?? user?.name ?? "";
   const displayEmail = user?.email ?? "";
   const displayDob = formatDateDDMMYYYY(user?.dob);
@@ -83,21 +83,14 @@ export default function UserProfile() {
   const [isEditingSkills, setIsEditingSkills] = useState(false);
   const [newRole, setNewRole] = useState("");
   const [newSkill, setNewSkill] = useState("");
-  const [memberRole, setMemberRole] = useState("");
+  const [memberRole, setMemberRole] = useState(() => user?.member_role ?? "");
   const [isEditingMemberRole, setIsEditingMemberRole] = useState(false);
 
-  const [name, setName] = useState(displayName);
-  const [email, setEmail] = useState(displayEmail);
+  const [name, setName] = useState(() => displayName);
+  const [email, setEmail] = useState(() => displayEmail);
   const [dateOfBirth, setDateOfBirth] = useState(() =>
     toISODateInputValue(user?.dob),
   );
-
-  useEffect(() => {
-    setName(displayName);
-    setEmail(displayEmail);
-    setDateOfBirth(toISODateInputValue(user?.dob));
-    setIsEditingAccount(false);
-  }, [user?.user_id]);
 
   const allRolesQuery = useQuery({
     queryKey: ["roles-master"],
@@ -128,7 +121,7 @@ export default function UserProfile() {
   const allSkillsQuery = useQuery({
     queryKey: ["skills-master"],
     queryFn: () => getSkills(),
-    enabled: !isEmployerView,
+    enabled: Boolean(token && !isEmployerView),
   });
 
   const mySkillsQuery = useQuery({
@@ -173,17 +166,10 @@ export default function UserProfile() {
     ),
   });
 
-  useEffect(() => {
-    if (!isEmployerView) return;
-    const mr = employerMemberQuery.data?.member_role ?? "";
-    setMemberRole(mr);
-    setIsEditingMemberRole(false);
-  }, [isEmployerView, employerMemberQuery.data?.member_role]);
-
   const memberTypesQuery = useQuery({
     queryKey: ["member-types"],
     queryFn: () => getMemberTypes(),
-    enabled: Boolean(isEmployerView),
+    enabled: Boolean(token && isEmployerView),
   });
 
   const memberTypeOptions = Array.isArray(memberTypesQuery.data)
@@ -303,6 +289,8 @@ export default function UserProfile() {
     },
   });
 
+  if (shouldRedirectToLogin) return <Navigate to="/login" replace />;
+
   async function uploadToCloudinary({ kind, file }) {
     if (!token) throw new Error("Not authenticated");
     if (!file) throw new Error("No file selected");
@@ -348,7 +336,11 @@ export default function UserProfile() {
       <h2 style={{ margin: 0 }}>My profile</h2>
 
       <section
-        style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}
+        style={{
+          border: "1px solid var(--dc-border)",
+          borderRadius: 8,
+          padding: 12,
+        }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <h3 style={{ margin: 0 }}>Account info</h3>
@@ -400,7 +392,7 @@ export default function UserProfile() {
                 style={{
                   padding: 8,
                   borderRadius: 6,
-                  border: "1px solid #d1d5db",
+                  border: "1px solid var(--dc-border)",
                 }}
               />
             ) : (
@@ -425,7 +417,7 @@ export default function UserProfile() {
                 style={{
                   padding: 8,
                   borderRadius: 6,
-                  border: "1px solid #d1d5db",
+                  border: "1px solid var(--dc-border)",
                   maxWidth: 220,
                 }}
               />
@@ -435,7 +427,7 @@ export default function UserProfile() {
           </div>
 
           {updateUserMutation.isError ? (
-            <div style={{ color: "crimson" }}>
+            <div style={{ color: "var(--dc-danger)" }}>
               {String(updateUserMutation.error?.message || "Update failed")}
             </div>
           ) : null}
@@ -454,7 +446,11 @@ export default function UserProfile() {
 
       {isEmployerView ? (
         <section
-          style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}
+          style={{
+            border: "1px solid var(--dc-border)",
+            borderRadius: 8,
+            padding: 12,
+          }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <h3 style={{ margin: 0 }}>Employer</h3>
@@ -519,7 +515,7 @@ export default function UserProfile() {
                       style={{
                         padding: 8,
                         borderRadius: 6,
-                        border: "1px solid #d1d5db",
+                        border: "1px solid var(--dc-border)",
                         minWidth: 280,
                       }}
                     >
@@ -562,7 +558,12 @@ export default function UserProfile() {
                     <div style={{ minWidth: 280 }}>{memberRole || "—"}</div>
                     <button
                       type="button"
-                      onClick={() => setIsEditingMemberRole(true)}
+                      onClick={() => {
+                        setMemberRole(
+                          employerMemberQuery.data?.member_role ?? "",
+                        );
+                        setIsEditingMemberRole(true);
+                      }}
                       disabled={memberTypesQuery.isLoading}
                     >
                       Edit
@@ -573,7 +574,7 @@ export default function UserProfile() {
             </div>
 
             {employerMemberQuery.isError || employerDetailsQuery.isError ? (
-              <div style={{ color: "crimson" }}>
+              <div style={{ color: "var(--dc-danger)" }}>
                 {String(
                   employerMemberQuery.error?.message ||
                     employerDetailsQuery.error?.message ||
@@ -583,7 +584,7 @@ export default function UserProfile() {
             ) : null}
 
             {updateEmployerMemberMutation.isError ? (
-              <div style={{ color: "crimson" }}>
+              <div style={{ color: "var(--dc-danger)" }}>
                 {String(
                   updateEmployerMemberMutation.error?.message ||
                     "Failed to update employer member",
@@ -595,7 +596,11 @@ export default function UserProfile() {
       ) : null}
 
       <section
-        style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}
+        style={{
+          border: "1px solid var(--dc-border)",
+          borderRadius: 8,
+          padding: 12,
+        }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <h3 style={{ margin: 0 }}>Uploads</h3>
@@ -815,13 +820,13 @@ export default function UserProfile() {
           ) : null}
 
           {myMediaQuery.isError ? (
-            <div style={{ color: "crimson" }}>
+            <div style={{ color: "var(--dc-danger)" }}>
               {String(myMediaQuery.error?.message || "Failed to load uploads")}
             </div>
           ) : null}
 
           {saveMediaMutation.isError || deleteMediaMutation.isError ? (
-            <div style={{ color: "crimson" }}>
+            <div style={{ color: "var(--dc-danger)" }}>
               {String(
                 saveMediaMutation.error?.message ||
                   deleteMediaMutation.error?.message ||
@@ -833,7 +838,11 @@ export default function UserProfile() {
       </section>
 
       <section
-        style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}
+        style={{
+          border: "1px solid var(--dc-border)",
+          borderRadius: 8,
+          padding: 12,
+        }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <h3 style={{ margin: 0 }}>Roles</h3>
@@ -903,7 +912,7 @@ export default function UserProfile() {
           ) : null}
 
           {addSkillMutation.isError || removeSkillMutation.isError ? (
-            <div style={{ color: "crimson" }}>
+            <div style={{ color: "var(--dc-danger)" }}>
               {String(
                 addSkillMutation.error?.message ||
                   removeSkillMutation.error?.message ||
@@ -916,7 +925,11 @@ export default function UserProfile() {
 
       {!isEmployerView ? (
         <section
-          style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}
+          style={{
+            border: "1px solid var(--dc-border)",
+            borderRadius: 8,
+            padding: 12,
+          }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <h3 style={{ margin: 0 }}>Skills</h3>
@@ -937,7 +950,7 @@ export default function UserProfile() {
               ) : (
                 mySkillNames.map((s) => (
                   <div key={s} style={chipStyle}>
-                    <span style={{ fontWeight: 600 }}>{s}</span>
+                    <span style={{ fontWeight: 600 }}>{formatString(s)}</span>
                     {isEditingSkills ? (
                       <button
                         type="button"
@@ -989,7 +1002,7 @@ export default function UserProfile() {
             ) : null}
 
             {addSkillMutation.isError || removeSkillMutation.isError ? (
-              <div style={{ color: "crimson" }}>
+              <div style={{ color: "var(--dc-danger)" }}>
                 {String(
                   addSkillMutation.error?.message ||
                     removeSkillMutation.error?.message ||

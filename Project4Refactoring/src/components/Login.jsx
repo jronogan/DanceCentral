@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext.jsx";
+import { useAuth } from "../auth/useAuth.js";
 
 function roleToPath(roleName) {
   switch ((roleName ?? "").toLowerCase()) {
@@ -80,7 +80,7 @@ const Login = () => {
         </label>
 
         {error ? (
-          <div style={{ color: "crimson" }} role="alert">
+          <div style={{ color: "var(--dc-danger)" }} role="alert">
             {error}
           </div>
         ) : null}

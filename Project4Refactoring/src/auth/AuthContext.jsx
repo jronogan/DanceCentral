@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, createContext } from "react";
+import React, { useEffect, useState, createContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   assignUserRole,
@@ -28,25 +28,27 @@ function safeJsonParse(value) {
 
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
-  const [token, setToken] = useState(null);
-  const [user, setUser] = useState(null);
-  const [roles, setRoles] = useState([]);
-  const [skills, setSkills] = useState([]);
-  const [activeRole, setActiveRole] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [hydrated] = useState(() => {
+    const saved = safeJsonParse(localStorage.getItem(STORAGE_KEY));
+    return {
+      token: saved?.token ?? null,
+      user: saved?.user ?? null,
+      roles: Array.isArray(saved?.roles) ? saved.roles : [],
+      skills: Array.isArray(saved?.skills) ? saved.skills : [],
+      activeRole: saved?.activeRole ?? null,
+    };
+  });
+
+  const [token, setToken] = useState(hydrated.token);
+  const [user, setUser] = useState(hydrated.user);
+  const [roles, setRoles] = useState(hydrated.roles);
+  const [skills, setSkills] = useState(hydrated.skills);
+  const [activeRole, setActiveRole] = useState(hydrated.activeRole);
+  const [loading] = useState(false);
 
   const isAuthenticated = Boolean(token);
 
-  // When logging in, get the user info and place them in the states for reference
-  useEffect(() => {
-    const saved = safeJsonParse(localStorage.getItem(STORAGE_KEY));
-    if (saved?.token) setToken(saved.token);
-    if (saved?.user) setUser(saved.user);
-    if (Array.isArray(saved?.roles)) setRoles(saved.roles);
-    if (Array.isArray(saved?.skills)) setSkills(saved.skills);
-    if (saved?.activeRole) setActiveRole(saved.activeRole);
-    setLoading(false);
-  }, []);
+  // Hydration is done in initial state to avoid setState inside effects.
 
   // At any render when these values change, update localStorage
   useEffect(() => {
@@ -316,8 +318,4 @@ export function AuthProvider({ children }) {
   );
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
-  return ctx;
-}
+export { AuthContext };
