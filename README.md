@@ -41,7 +41,8 @@ Users can register, choose one or more roles, manage their profile, and apply to
 
 ## Component Tree
 
-![component-tree](../Project4/Proposal/Component%20Tree%20Final.jpg)
+![Component Tree Final](https://github.com/user-attachments/assets/d3723f59-2c3b-489a-ba91-2083d4714b3a)
+
 
 ## How it works (new user guide)
 
