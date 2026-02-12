@@ -3,35 +3,24 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from db.db_pool import get_cursor, release_connection
 import psycopg2
 
+from resources.validations.request import validate_json
+from resources.validations.schemas import GigRoleCreateSchema, GigRoleDeleteSchema, GigRoleUpdateSchema
+
 gigs_roles = Blueprint('gigs_roles', __name__)
 
 @gigs_roles.route('/', methods=['POST'])
 @jwt_required()
 def create_gigs_roles():
-    data = request.get_json() or {}
+    data, err, status = validate_json(GigRoleCreateSchema())
+    if err:
+        return err, status
+
     gig_id = data.get('gig_id')
     role_name = data.get('role_name')
     needed_count = data.get('needed_count')
     pay_amount = data.get('pay_amount')
     pay_currency = data.get('pay_currency')
     pay_unit = data.get('pay_unit')
-
-    required_fields = [
-        "gig_id",
-        "role_name",
-        "needed_count",
-        "pay_amount",
-        "pay_currency",
-        "pay_unit"
-    ]
-
-    missing = [f for f in required_fields if not data.get(f)]
-
-    if missing:
-        return jsonify({
-            "message": "Missing required fields",
-            "missing": missing
-        }), 400
 
     current_user_id = int(get_jwt_identity())
 
@@ -74,10 +63,11 @@ def create_gigs_roles():
 @gigs_roles.route('/<gig_id>', methods=['DELETE'])
 @jwt_required()
 def delete_gigs_roles(gig_id):
-    data = request.get_json() or {}
+    data, err, status = validate_json(GigRoleDeleteSchema())
+    if err:
+        return err, status
+
     role_name = data.get('role_name')
-    if not role_name:
-        return jsonify({"message": "Missing role_name"}), 400
 
     current_user_id = int(get_jwt_identity())
     conn, cursor = get_cursor()
@@ -107,7 +97,10 @@ def delete_gigs_roles(gig_id):
 @gigs_roles.route('/<gig_id>', methods=['PATCH'])
 @jwt_required()
 def update_gigs_roles(gig_id):
-    data = request.get_json() or {}
+    data, err, status = validate_json(GigRoleUpdateSchema(), partial=True)
+    if err:
+        return err, status
+
     role_name = data.get('role_name')
     needed_count = data.get('needed_count')
     pay_amount = data.get('pay_amount')

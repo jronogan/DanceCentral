@@ -4,17 +4,23 @@ from db.db_pool import get_cursor, release_connection
 from marshmallow import ValidationError
 from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity, get_jwt
 
+from resources.validations.request import validate_json
+from resources.validations.schemas import UserLoginSchema, UserRegisterSchema, UserUpdateMeSchema
+
 import psycopg2
 
 users = Blueprint('users', __name__)
 
 @users.route('/register', methods=['POST'])
 def register_user():
-    data = request.get_json() or {}
-    user_name= data['name']
-    email = data['email']
-    dob= data['date_of_birth']
-    password = data['password']
+    data, err, status = validate_json(UserRegisterSchema())
+    if err:
+        return err, status
+
+    user_name = data["name"]
+    email = data["email"]
+    dob = data["date_of_birth"]
+    password = data["password"]
     conn, cursor = get_cursor()
 
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(12))
@@ -42,9 +48,12 @@ def register_user():
 
 @users.route('/login', methods=['POST'])
 def login_user():
-    data = request.get_json() or {}
-    email = data['email']
-    password = data['password']
+    data, err, status = validate_json(UserLoginSchema())
+    if err:
+        return err, status
+
+    email = data["email"]
+    password = data["password"]
     conn, cursor = get_cursor()
     cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
     results = cursor.fetchone()
@@ -115,7 +124,9 @@ def delete_user(user_id):
 @jwt_required()
 def update_me():
     user_id = int(get_jwt_identity())
-    data = request.get_json() or {}
+    data, err, status = validate_json(UserUpdateMeSchema(), partial=True)
+    if err:
+        return err, status
 
     name = data.get("name")
     email = data.get("email")

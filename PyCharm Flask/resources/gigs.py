@@ -3,20 +3,23 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from db.db_pool import get_cursor, release_connection
 import psycopg2
 
+from resources.validations.request import validate_json
+from resources.validations.schemas import GigCreateSchema, GigUpdateSchema
+
 gigs = Blueprint("gigs", __name__)
 
 @gigs.route("/", methods=["POST"])
 @jwt_required()
 def create_gig():
-    data = request.get_json() or  {}
+    data, err, status = validate_json(GigCreateSchema())
+    if err:
+        return err, status
+
     gig_name = data.get("gig_name")
     gig_date = data.get("gig_date")
     gig_details = data.get("gig_details")
     type_name = data.get("type_name")
     employer_id = data.get("employer_id")
-
-    if not gig_name or not gig_details or not gig_date or not type_name or not employer_id:
-        return jsonify(status="error", msg="missing information"), 400
 
     posted_by_user_id = int(get_jwt_identity())
 
@@ -109,7 +112,9 @@ def get_all_gigs_posted():
 @gigs.route("/<gig_id>", methods=["PATCH"])
 @jwt_required()
 def update_gig(gig_id):
-    data = request.get_json() or {}
+    data, err, status = validate_json(GigUpdateSchema(), partial=True)
+    if err:
+        return err, status
 
     gig_name = data.get("gig_name")
     gig_date = data.get("gig_date")

@@ -3,20 +3,23 @@ from flask_jwt_extended import jwt_required
 from db.db_pool import get_cursor, release_connection
 import psycopg2
 
+from resources.validations.request import validate_json
+from resources.validations.schemas import EmployerCreateSchema, EmployerUpdateSchema
+
 employers = Blueprint("employers", __name__)
 
 @employers.route("/", methods=["POST"])
 @jwt_required()
 def create_employer():
-    data = request.get_json() or {}
+    data, err, status = validate_json(EmployerCreateSchema())
+    if err:
+        return err, status
+
     employer_name = data.get("employer_name")
     description = data.get("description")
     website = data.get("website")
     email = data.get("email")
     phone = data.get("phone")
-
-    if not employer_name:
-        return jsonify(status="error", msg="employer_name is required"), 400
 
     conn, cursor = get_cursor()
     try:
@@ -78,7 +81,9 @@ def get_employer(employer_id):
 @employers.route("/<employer_id>", methods=["PATCH"])
 @jwt_required()
 def update_employer(employer_id):
-    data = request.get_json() or {}
+    data, err, status = validate_json(EmployerUpdateSchema(), partial=True)
+    if err:
+        return err, status
 
     employer_name = data.get("employer_name")
     description = data.get("description")

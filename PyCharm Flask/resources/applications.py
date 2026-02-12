@@ -3,6 +3,13 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from db.db_pool import get_cursor, release_connection
 import psycopg2
 
+from resources.validations.request import validate_json
+from resources.validations.schemas import (
+    ApplicationCreateSchema,
+    ApplicationDeleteSchema,
+    ApplicationUpdateStatusSchema,
+)
+
 applications = Blueprint('applications', __name__)
 
 @applications.route("/", methods=["GET"])
@@ -93,10 +100,11 @@ def get_application():
 @applications.route('/', methods=['POST'])
 @jwt_required()
 def create_application():
-    data = request.get_json() or {}
+    data, err, status = validate_json(ApplicationCreateSchema())
+    if err:
+        return err, status
+
     gig_id = data.get('gig_id')
-    if not gig_id:
-        return jsonify({'message': 'No gig_id provided'}), 400
 
     user_id = int(get_jwt_identity())
 
@@ -133,10 +141,11 @@ def create_application():
 @applications.route('/', methods=['DELETE'])
 @jwt_required()
 def delete_application():
-    data = request.get_json() or {}
+    data, err, status = validate_json(ApplicationDeleteSchema())
+    if err:
+        return err, status
+
     gig_id = data.get('gig_id')
-    if not gig_id:
-        return jsonify({'message': 'No gig_id provided'}), 400
     user_id = int(get_jwt_identity())
     conn, cursor = get_cursor()
 
@@ -154,15 +163,16 @@ def delete_application():
 @applications.route('/<application_id>', methods=['PATCH'])
 @jwt_required()
 def update_application(application_id):
-    data = request.get_json() or {}
+    data, err, status = validate_json(ApplicationUpdateStatusSchema())
+    if err:
+        return err, status
+
     new_status = data.get('status')
     current_user_id = int(get_jwt_identity())
 
-    if not new_status:
-        return jsonify({"error": "Missing 'status'"}), 400
-
     allowed_for_employer = {"accepted", "rejected", "shortlisted"}
-    allowed_for_user = {"withdrawn, applied"}
+    # NOTE: this was previously a single string inside a set; keep intended values.
+    allowed_for_user = {"withdrawn", "applied"}
 
     conn, cursor = get_cursor()
     try:
@@ -202,9 +212,6 @@ def update_application(application_id):
 
         if is_applicant and new_status not in allowed_for_user:
             return jsonify({"error": f"Users cannot set status '{new_status}'"}), 403
-
-        # Optional: prevent employer and applicant conflict if somehow both (rare edge)
-        # Employer should win? Usually not needed.
 
         cursor.execute(
             """
