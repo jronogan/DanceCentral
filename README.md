@@ -8,6 +8,7 @@ Users can register, choose one or more roles, manage their profile, and apply to
 - [Tech stack](#tech-stack)
   - [Frontend](#frontend)
   - [Backend (API)](#backend-api)
+- [Component Tree](#component-tree)
 - [How it works (new user guide)](#how-it-works-new-user-guide)
   - [1) Register](#1-register)
   - [2) Log in](#2-log-in)
@@ -18,11 +19,8 @@ Users can register, choose one or more roles, manage their profile, and apply to
 - [Running locally](#running-locally)
   - [Prerequisites](#prerequisites)
   - [Install + start](#install--start)
-  - [Build](#build)
+  - [env keys](#env-keys)
 - [Notes](#notes)
-- [React + Vite](#react--vite)
-  - [React Compiler](#react-compiler)
-  - [Expanding the ESLint configuration](#expanding-the-eslint-configuration)
 
 ## Tech stack
 
@@ -37,8 +35,13 @@ Users can register, choose one or more roles, manage their profile, and apply to
 
 - Python
 - Flask
+- PostgreSQL
 
 > This repository is the **frontend**. It expects a running Flask API and talks to it via REST endpoints (see `src/library/api.js` and `src/library/dashboardApi.js`).
+
+## Component Tree
+
+![component-tree](../Project4/Proposal/Component%20Tree%20Final.jpg)
 
 ## How it works (new user guide)
 
@@ -99,32 +102,20 @@ npm install
 npm run dev
 ```
 
-### Build
+### .env keys
 
-```bash
-npm run build
-```
+- Frontend .env keys
+  - VITE_FLASK_SERVER_URL
+- Backend .env keys
+  - DB
+  - DB_HOST
+  - DB_PORT
+  - DB_USER
+  - JWT_SECRET_KEY
+  - CLOUDINARY_CLOUD_NAME
+  - CLOUDINARY_API_KEY
+  - CLOUDINARY_API_SECRET
 
 ## Notes
 
 - API calls are centralized in `src/library/dashboardApi.js`.
-- The UI formats display strings (skills/roles/event types) with `formatString()` from `src/library/dashboardApi.js`.
-
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-
-> > > > > > > d72a744 (Initial commit)

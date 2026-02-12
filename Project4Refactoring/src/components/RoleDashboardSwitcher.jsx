@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth.js";
 
@@ -20,10 +20,8 @@ export default function RoleDashboardSwitcher({ label = "Dashboard" }) {
   const location = useLocation();
   const { roles, activeRole, setActiveRole } = useAuth();
 
-  const availableRoles = useMemo(
-    () =>
-      (Array.isArray(roles) ? roles : []).filter((r) => roleToPath(r) !== "/"),
-    [roles],
+  const availableRoles = (Array.isArray(roles) ? roles : []).filter(
+    (r) => roleToPath(r) !== "/",
   );
 
   // If user somehow has no dashboard roles, don't render.
